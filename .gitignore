@@ -1,0 +1,18 @@
+# PyCharm specific files
+.idea/
+
+# Python virtual environment
+.venv/
+venv/
+
+# Build and distribution artifacts
+build/
+dist/
+*.spec
+
+# Cache files
+__pycache__/
+*.pyc
+
+# Local cache files (for our app list)
+scrcpy-gui-cache/
