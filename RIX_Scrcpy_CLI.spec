@@ -18,7 +18,9 @@ a = Analysis(
     pathex=[ROOT],
     binaries=[],
     # 选项注册表是运行期读取的 JSON，必须一起打进去
-    datas=[(DATA_DIR, os.path.join("rix", "data"))],
+    datas=[(DATA_DIR, os.path.join("rix", "data"))]
+    # 说明：CLI 单文件刻意**不**内置 scrcpy（否则体积翻几倍），
+    # 需要时运行 `rix-scrcpy vendor install` 即可一键获取官方核心。
     hiddenimports=["rix.registry", "rix.profiles", "rix.scrcpy_bin"],
     hookspath=[],
     hooksconfig={},

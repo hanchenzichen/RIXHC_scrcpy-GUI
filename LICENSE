@@ -24,12 +24,17 @@ SOFTWARE.
 
 ## Third-party notices / 第三方说明
 
-- This project links against **PySide6 (Qt for Python)**, which is licensed under
-  the **LGPL v3** (see https://www.qt.io/licensing/). It is used as an
-  unmodified, dynamically linked library. Users may replace the PySide6/Qt
-  libraries with their own compatible builds.
-  （本项目使用 PySide6，采用 LGPL v3 授权，未修改并以动态链接方式使用。）
-- This project is a **front-end** for [scrcpy](https://github.com/Genymobile/scrcpy)
-  (Apache-2.0) and **adb** (Android platform-tools). Those programs are **not**
-  bundled or redistributed here; users install them separately.
-  （本项目不打包、不再分发 scrcpy 与 adb，需用户自行安装。）
+本项目**源代码**以 MIT 许可发布。**二进制发行包**中还包含以下第三方组件，
+详见仓库根目录的 `THIRD_PARTY_NOTICES.md`：
+
+- **scrcpy**（Apache-2.0，https://github.com/Genymobile/scrcpy）：以**未经修改**的
+  官方发布包形式随程序分发，上游 `LICENSE` 文件原样保留在包内 `scrcpy/` 目录，
+  并使用上游 `SHA256SUMS.txt` 做完整性校验。
+- **adb / Android platform-tools**：由 scrcpy 官方发布包自带，本项目未单独下载或修改。
+- **PySide6 / Qt for Python**（LGPL v3，https://www.qt.io/licensing/）：未修改，
+  以动态链接方式使用，用户可自行替换包内的 PySide6/Qt 动态库。
+
+This project's **source code** is MIT-licensed. Its **binary distributions** also
+bundle unmodified third-party components (scrcpy under Apache-2.0, the adb binary
+shipped inside scrcpy's official release, and PySide6 under LGPL v3).
+See `THIRD_PARTY_NOTICES.md` for details.

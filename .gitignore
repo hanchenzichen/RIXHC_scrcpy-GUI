@@ -21,3 +21,7 @@ __pycache__/
 
 # Local cache files (for our app list)
 scrcpy-gui-cache/
+# 内置的官方 scrcpy 核心（由 tools/fetch_vendor.py 或 CI 下载，不入库）
+vendor/scrcpy/
+vendor/*.zip
+vendor/*.tar.gz

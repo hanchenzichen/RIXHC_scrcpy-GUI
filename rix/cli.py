@@ -23,6 +23,7 @@ import sys
 from rix import __version__
 from rix.profiles import InvalidProfileName, ProfileStore
 from rix.registry import UnknownOptionError, load_registry, parse_assignments
+from rix import vendor
 from rix.scrcpy_bin import find_binary, run_capture, scrcpy_version, supports
 
 
@@ -44,6 +45,13 @@ def cmd_version(args) -> int:
         print(f"scrcpy: {scrcpy} (版本 {scrcpy_version(scrcpy) or '未知'})")
     adb = find_binary("adb")
     print(f"adb:    {adb or '未找到'}")
+    info = vendor.status()
+    if info["bundled"]:
+        print(f"内置核心: {info['version'] or '已就位'}（{info['bundled']}）")
+    elif info["user"]:
+        print(f"用户安装: {info['version'] or '已就位'}（{info['user']}）")
+    else:
+        print("内置核心: 未安装（可用 `rix-scrcpy vendor install` 一键获取官方 scrcpy）")
     registry = load_registry()
     print(f"选项注册表: {registry.option_count} 个参数")
     return 0
@@ -172,6 +180,30 @@ def cmd_profiles(args) -> int:
     return 1
 
 
+def cmd_vendor(args) -> int:
+    """管理内置 scrcpy 核心（下载官方发布包并校验 SHA256）。"""
+    if args.action == "status":
+        info = vendor.status()
+        print(f"平台:      {info['platform']}")
+        print(f"内置目录:  {info['bundled'] or '（无）'}")
+        print(f"用户目录:  {info['user'] or '（无）'}")
+        print(f"当前版本:  {info['version'] or '未安装'}")
+        print(f"可执行文件: {info['path'] or '（无）'}")
+        return 0
+    if args.action == "path":
+        print(vendor.bundled_vendor_dir() or vendor.user_vendor_dir())
+        return 0
+    try:
+        target = vendor.install(version=args.version, target_dir=args.target,
+                                plat=args.platform, verify=not args.no_verify)
+    except Exception as exc:  # noqa: BLE001 - 网络/校验失败都要给用户看得懂的提示
+        print(f"安装失败: {exc}", file=sys.stderr)
+        return 1
+    print(f"完成：{target}")
+    print("提示：官方包同时包含 adb，无需再单独安装。")
+    return 0
+
+
 def cmd_doctor(args) -> int:
     """体检：把本项目踩过的坑一次性查出来。"""
     problems = 0
@@ -179,6 +211,13 @@ def cmd_doctor(args) -> int:
     version = scrcpy_version(args.binary or find_binary("scrcpy"))
 
     print("== 环境检查 ==")
+    info = vendor.status()
+    if info["bundled"]:
+        print(f"v 内置 scrcpy {info['version'] or ''}（随程序分发）")
+    elif info["user"]:
+        print(f"v 用户目录 scrcpy {info['version'] or ''}（{info['user']}）")
+    else:
+        print("i 未安装内置核心，可运行 `rix-scrcpy vendor install`")
     if not find_binary("scrcpy"):
         print("x 未找到 scrcpy（设置 RIX_SCRCPY 或加入 PATH）")
         problems += 1
@@ -246,6 +285,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--set", action="append", metavar="KEY=VALUE")
     p.add_argument("--path", default="profiles.json")
     p.set_defaults(func=cmd_profiles)
+
+    p = sub.add_parser("vendor", help="管理内置 scrcpy 核心")
+    p.add_argument("action", choices=["status", "install", "path"])
+    p.add_argument("--version", help="scrcpy 版本（默认取上游最新）")
+    p.add_argument("--target", help="安装目录")
+    p.add_argument("--platform", help="平台标识，如 win64 / linux-x86_64")
+    p.add_argument("--no-verify", action="store_true", help="跳过 SHA256 校验（不建议）")
+    p.set_defaults(func=cmd_vendor)
 
     p = sub.add_parser("doctor", help="检查环境与参数健康度")
     p.add_argument("--binary", help="scrcpy 可执行文件路径")

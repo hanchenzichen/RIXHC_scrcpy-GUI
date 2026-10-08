@@ -46,6 +46,22 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: python tools/smoke_gui.py
 
+  vendor:
+    name: 内置 scrcpy 核心端到端
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 下载 + SHA256 校验 + 解包官方 scrcpy
+        run: python -m rix.vendor install --target vendor/scrcpy
+      - name: 内置核心必须能被自动找到并执行
+        run: |
+          ./vendor/scrcpy/scrcpy --version
+          python -m rix.cli doctor || true
+          python -m rix.cli version
+
   drift:
     name: 上游参数一致性
     runs-on: ubuntu-latest

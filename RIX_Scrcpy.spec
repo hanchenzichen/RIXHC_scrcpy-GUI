@@ -16,6 +16,16 @@ import sys
 # SPECPATH 由 PyInstaller 注入，指向本文件所在目录（仓库根目录）
 ROOT = SPECPATH
 ICON = os.path.join(ROOT, "RIXHC.ico")
+NOTICES = os.path.join(ROOT, "THIRD_PARTY_NOTICES.md")
+# 内置 scrcpy 核心：由 CI（或 tools/ 手动执行 python -m rix.vendor install）准备到
+# vendor/scrcpy/。存在就一起打包，不存在则程序自动回退到系统 PATH。
+VENDOR_DIR = os.path.join(ROOT, "vendor", "scrcpy")
+
+DATAS = [(ICON, ".")]
+if os.path.isfile(NOTICES):
+    DATAS.append((NOTICES, "."))
+if os.path.isdir(VENDOR_DIR):
+    DATAS.append((VENDOR_DIR, "scrcpy"))
 
 # 这些 Qt 模块本项目完全用不到，排除掉可以显著减小体积
 EXCLUDES = [
@@ -49,8 +59,8 @@ a = Analysis(
     [os.path.join(ROOT, "main.py")],
     pathex=[ROOT],
     binaries=[],
-    # 把图标一起打进去，这样运行时不依赖当前工作目录
-    datas=[(ICON, ".")],
+    # 图标、第三方声明、以及内置的 scrcpy 核心
+    datas=DATAS,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

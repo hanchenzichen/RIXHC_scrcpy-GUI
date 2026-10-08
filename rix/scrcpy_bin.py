@@ -28,10 +28,28 @@ _WINDOWS_DIRS = (
 _POSIX_DIRS = ("/usr/local/bin", "/usr/bin", "/snap/bin", "/opt/homebrew/bin", "/usr/lib/android-sdk/platform-tools")
 
 
+def _vendor_candidates(name: str) -> Iterator[str]:
+    """内置（随程序分发或用户自行安装）的 scrcpy/adb。
+
+    官方发布包同时包含 scrcpy 与 adb，所以两者都从这里找。
+    延迟 import 是为了避免与 rix.vendor 形成循环依赖。
+    """
+    try:
+        from rix.vendor import vendor_dirs
+    except ImportError:  # pragma: no cover - 极端情况下退化为只用系统安装
+        return
+    exe = name + ".exe" if os.name == "nt" else name
+    for directory in vendor_dirs():
+        yield os.path.join(directory, exe)
+
+
 def _candidates(name: str) -> Iterator[str]:
     env_name = ENV_OVERRIDES.get(name)
     if env_name and os.environ.get(env_name):
         yield os.environ[env_name]
+
+    # 内置核心优先于系统 PATH：这样「随程序分发的版本」一定自洽
+    yield from _vendor_candidates(name)
 
     found = shutil.which(name)
     if found:

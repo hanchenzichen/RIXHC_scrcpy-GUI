@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+env:
+  # 内置 scrcpy 核心的版本。升级时改这里即可（值必须与上游 tag 一致）。
+  SCRCPY_VERSION: '5.0.1'
+
 jobs:
   gui:
     name: GUI 打包 (${{ matrix.os }})
@@ -42,7 +46,20 @@ jobs:
         shell: bash
         run: python tools/check_version.py
 
-      - name: PyInstaller 打包（onedir）
+      - name: 内置 scrcpy 核心（官方发布包 + SHA256 校验）
+        run: python -m rix.vendor install --version "$SCRCPY_VERSION" --target vendor/scrcpy
+
+      - name: 验证内置核心可运行
+        shell: bash
+        run: |
+          ls -la vendor/scrcpy
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./vendor/scrcpy/scrcpy.exe --version
+          else
+            ./vendor/scrcpy/scrcpy --version
+          fi
+
+      - name: PyInstaller 打包（onedir，含内置 scrcpy 核心）
         run: pyinstaller RIX_Scrcpy.spec --noconfirm
 
       - name: 压缩产物 (Windows)
