@@ -33,7 +33,7 @@
 | 可见性 | **public** | GitHub Actions **完全免费、不限分钟数**（这条很关键） |
 | 默认分支 | `main` | — |
 | Stars / Forks | 4 / 0 | 已有外部用户 |
-| Releases | 已有 **v1.0.0**，挂着 `RIX_Scrcpy_GUI.exe` | 说明现在是「本地打包 → 手动上传」 |
+| Releases | 已有 **v1.0.0**，挂着 `RIX-Scrcpy.exe` | 说明现在是「本地打包 → 手动上传」 |
 | Actions workflows | **无** | 没有 CI，也没有自动构建 |
 | LICENSE 文件 | **不存在**（README 徽章写 MIT，但 API 显示 license=null） | 默认是「保留所有权利」，且与 PyQt6 的 GPLv3 冲突（见第三节） |
 | Issues / Wiki | 开启 / 开启 | 可以配合 Issue 模板 |

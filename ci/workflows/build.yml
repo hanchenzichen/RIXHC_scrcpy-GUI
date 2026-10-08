@@ -26,9 +26,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset: RIX_Scrcpy_GUI-windows-x64.zip
+            asset: RIX-Scrcpy-windows-x64.zip
           - os: ubuntu-latest
-            asset: RIX_Scrcpy_GUI-linux-x64.tar.gz
+            asset: RIX-Scrcpy-linux-x64.tar.gz
     steps:
       - uses: actions/checkout@v4
 
@@ -60,16 +60,16 @@ jobs:
           fi
 
       - name: PyInstaller 打包（onedir，含内置 scrcpy 核心）
-        run: pyinstaller RIX_Scrcpy.spec --noconfirm
+        run: pyinstaller RIX-Scrcpy.spec --noconfirm
 
       - name: 压缩产物 (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path dist/RIX_Scrcpy_GUI/* -DestinationPath "${{ matrix.asset }}"
+        run: Compress-Archive -Path dist/RIX-Scrcpy/* -DestinationPath "${{ matrix.asset }}"
 
       - name: 压缩产物 (Linux)
         if: runner.os == 'Linux'
-        run: tar -czf "${{ matrix.asset }}" -C dist RIX_Scrcpy_GUI
+        run: tar -czf "${{ matrix.asset }}" -C dist RIX-Scrcpy
 
       - uses: actions/upload-artifact@v4
         with:
@@ -102,7 +102,7 @@ jobs:
           pip install pyinstaller
 
       - name: 打包 CLI 单文件（不需要装 Python 就能用）
-        run: pyinstaller RIX_Scrcpy_CLI.spec --noconfirm
+        run: pyinstaller rix-scrcpy-cli.spec --noconfirm
 
       - name: 冒烟测试（真实运行打包出来的 CLI）
         shell: bash

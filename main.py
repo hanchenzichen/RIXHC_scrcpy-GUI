@@ -66,7 +66,7 @@ class ScrcpyMainMenu(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f'RIX_Scrcpy 控制中心 v{__version__} @hanchenzichen')
+        self.setWindowTitle(f'RIX-Scrcpy 控制中心 v{__version__} @hanchenzichen')
         self.setGeometry(200, 200, 700, 800)
         self.setWindowIcon(QIcon(resource_path('RIXHC.ico')))
 

@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-REPO = "hanchenzichen/RIXHC_scrcpy-GUI"
+REPO = "hanchenzichen/rix-scrcpy"
 
 DESCRIPTION = (
     "Scrcpy 控制中心：GUI + TUI + CLI 三端共用一份核心；内置官方 scrcpy 核心"

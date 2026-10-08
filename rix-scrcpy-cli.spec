@@ -5,7 +5,7 @@ PyInstaller 打包配置（CLI / TUI，onefile 模式）。
 CLI 是纯命令行程序，没有启动解压成本的顾虑，所以用 onefile：
 用户拿到单个可执行文件，不需要安装 Python，也不需要解压目录。
 
-用法（仓库根目录）：pyinstaller RIX_Scrcpy_CLI.spec --noconfirm
+用法（仓库根目录）：pyinstaller rix-scrcpy-cli.spec --noconfirm
 """
 
 import os

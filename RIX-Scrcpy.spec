@@ -7,7 +7,7 @@ PyInstaller 打包配置（RIX Scrcpy GUI，onedir 模式）。
   onedir 启动快、内存曲线平缓，符合本项目「省内存 + 无异常」的目标。
 
 注意：本文件必须纳入版本管理，否则构建不可复现。
-用法（仓库根目录）：pyinstaller RIX_Scrcpy.spec --noconfirm
+用法（仓库根目录）：pyinstaller RIX-Scrcpy.spec --noconfirm
 """
 
 import os
@@ -76,7 +76,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="RIX_Scrcpy_GUI",
+    name="RIX-Scrcpy",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -97,5 +97,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="RIX_Scrcpy_GUI",
+    name="RIX-Scrcpy",
 )

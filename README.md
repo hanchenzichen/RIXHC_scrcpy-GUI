@@ -28,7 +28,7 @@ GUI, TUI and CLI front-ends sharing one headless core.
 
 | 前端 | 启动方式 | 适用场景 |
 | --- | --- | --- |
-| GUI | `python main.py` 或打包好的 `RIX_Scrcpy_GUI` | 日常可视化配置 |
+| GUI | `python main.py` 或打包好的 `RIX-Scrcpy` | 日常可视化配置 |
 | CLI | `rix-scrcpy run --set ...` | 脚本、批处理、CI、远程 SSH |
 | TUI | `rix-scrcpy-tui` 或 `python -m rix.tui` | 没有桌面环境、想省内存 |
 
@@ -122,8 +122,8 @@ tools/
   smoke_gui.py           GUI 无头自检（CI 用）
 tests/                   69 个单元测试
 docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）
-RIX_Scrcpy.spec          GUI 打包配置（onedir）
-RIX_Scrcpy_CLI.spec      CLI 打包配置（onefile）
+RIX-Scrcpy.spec          GUI 打包配置（onedir）
+rix-scrcpy-cli.spec      CLI 打包配置（onefile）
 ci/workflows/            GitHub Actions 工作流定义（用 install_workflows.py 安装）
 ```
 
@@ -158,7 +158,7 @@ python -m rix.vendor install --version 5.0.1 --target vendor/scrcpy
 ```
 
 它会下载官方发布包 → 用 `SHA256SUMS.txt` 校验 → 解包到 `vendor/scrcpy/`，
-然后由 `RIX_Scrcpy.spec` 一起打进安装包。升级 scrcpy 只需改工作流里的
+然后由 `RIX-Scrcpy.spec` 一起打进安装包。升级 scrcpy 只需改工作流里的
 `SCRCPY_VERSION`。合规说明见 `THIRD_PARTY_NOTICES.md`。
 
 | 工作流 | 触发 | 作用 |
