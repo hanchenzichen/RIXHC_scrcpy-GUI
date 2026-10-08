@@ -155,4 +155,4 @@ class DeveloperPanel(QWidget):
         if port := self.tunnel_port_input.text().strip():
             args.extend(['--tunnel-port', port])
 
-            return args
+        return args

@@ -120,8 +120,8 @@ tools/
   gen_options.py         从上游 cli.c 生成注册表
   check_version.py       版本一致性校验（CI 用）
   smoke_gui.py           GUI 无头自检（CI 用）
-tests/                   69 个单元测试
-docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）
+tests/                   74 个单元测试（含 GUI 面板结构检查，无需 Qt）
+docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）、协作约定（agent-brief.md）
 RIX-Scrcpy.spec          GUI 打包配置（onedir）
 rix-scrcpy-cli.spec      CLI 打包配置（onefile）
 ci/workflows/            GitHub Actions 工作流定义（用 install_workflows.py 安装）
@@ -130,6 +130,8 @@ ci/workflows/            GitHub Actions 工作流定义（用 install_workflows.
 ## 👩‍💻 开发
 
 ```bash
+# 本地验证（含无头 GUI 自检，能抓出「导入即崩溃」「面板返回 None」这类真问题）
+QT_QPA_PLATFORM=offscreen python tools/smoke_gui.py
 python tools/gen_options.py                # 重新生成注册表（需要网络）
 python tools/gen_options.py --source path/to/cli.c   # 或从本地文件生成
 python -m unittest discover -s tests -t .  # 跑测试
@@ -163,7 +165,7 @@ python -m rix.vendor install --version 5.0.1 --target vendor/scrcpy
 
 | 工作流 | 触发 | 作用 |
 | --- | --- | --- |
-| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、69 个单元测试、GUI 无头自检；另有「内置核心端到端」作业真实下载官方 scrcpy 并执行 |
+| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、74 个单元测试、GUI 无头自检；另有「内置核心端到端」作业真实下载官方 scrcpy 并执行 |
 | `build.yml` | 打 `v*` tag 或手动 | 打包 Windows/Linux 的 GUI（onedir）与 CLI（onefile），打 tag 时自动创建 Release |
 | `upstream-drift.yml` | 每周一 / 手动 | 对比上游 scrcpy 参数，有变化自动开 Issue |
 

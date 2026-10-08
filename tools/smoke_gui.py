@@ -30,7 +30,14 @@ def main() -> int:
     try:
         from PySide6.QtWidgets import QApplication
     except ImportError as exc:
-        print(f"跳过：未安装 PySide6（{exc}）")
+        message = str(exc)
+        if "cannot open shared object" in message or "libGL" in message:
+            print("跳过：PySide6 已安装但缺少系统图形库（libGL/X11 等）。")
+            print("  Linux 上可执行：sudo apt install libgl1 libegl1 libx11-6 libxkbcommon0 "
+                  "libglib2.0-0 libfreetype6 libfontconfig1 libdbus-1-3")
+            print("  或者直接在你的桌面系统上运行本脚本。")
+        else:
+            print(f"跳过：未安装 PySide6（{message}）")
         return 0
 
     from main import ScrcpyMainMenu, resource_path
@@ -54,6 +61,8 @@ def main() -> int:
         return 1
 
     # 3. 每个面板的 get_args() 都要能返回列表（不能抛异常）
+    #    例外：device_panel 在「没选设备」时会返回 None 表示选择不合法，
+    #    主窗口据此中止启动并给出提示，这是既定契约。
     for name in PANELS:
         panel = getattr(window, name, None)
         if panel is None:
@@ -63,6 +72,8 @@ def main() -> int:
             args = panel.get_args()
         except Exception as exc:  # noqa: BLE001
             failures.append(f"{name}.get_args() 抛异常: {exc!r}")
+            continue
+        if args is None and name == "device_panel":
             continue
         if not isinstance(args, list) or not all(isinstance(item, str) for item in args):
             failures.append(f"{name}.get_args() 返回值不是字符串列表: {args!r}")
