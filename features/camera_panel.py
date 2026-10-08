@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit,
                              QComboBox, QCheckBox, QGroupBox, QPushButton, QHBoxLayout)
-from PyQt6.QtCore import QThread
+from PySide6.QtCore import QThread
 from core.command_runner import AdbWorker
 
 

@@ -1,5 +1,5 @@
 import subprocess
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
                              QLineEdit, QComboBox, QCheckBox, QPushButton, QHBoxLayout)
 
 

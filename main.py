@@ -1,9 +1,12 @@
+import os
+import shlex
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QTextEdit, QTabWidget, QLabel, QGroupBox, QScrollArea,
-                             QRadioButton, QSplitter, QStyleFactory)
-from PyQt6.QtCore import QThread, Qt
-from PyQt6.QtGui import QIcon
+                             QRadioButton, QSplitter, QStyleFactory, QDialog, QPlainTextEdit)
+from PySide6.QtCore import QThread, Qt
+from PySide6.QtGui import QIcon
 
 # -----------------------------------------------------------------------------
 # 导入所有核心与功能模块
@@ -24,6 +27,21 @@ from features.virtual_display_panel import VirtualDisplayPanel
 from features.v4l2_panel import V4l2Panel
 from features.developer_panel import DeveloperPanel
 
+try:
+    from rix import __version__
+except ImportError:  # 兼容直接以脚本方式运行（未安装 rix 包）
+    __version__ = "dev"
+
+
+def resource_path(name: str) -> str:
+    """获取资源文件的绝对路径。
+
+    打包成 exe 后资源被解包到 sys._MEIPASS；直接跑源码时资源就在本文件旁边。
+    这样无论从哪个工作目录启动，图标都能正确加载。
+    """
+    base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, name)
+
 
 class ScrcpyMainMenu(QMainWindow):
     """
@@ -32,9 +50,9 @@ class ScrcpyMainMenu(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('RIX_Scrcpy 控制中心@hanchenzichen')
+        self.setWindowTitle(f'RIX_Scrcpy 控制中心 v{__version__} @hanchenzichen')
         self.setGeometry(200, 200, 700, 800)
-        self.setWindowIcon(QIcon('RIXHC.ico'))
+        self.setWindowIcon(QIcon(resource_path('RIXHC.ico')))
 
         self.session_manager = SessionManager()
         self.initUI()
@@ -171,10 +189,14 @@ class ScrcpyMainMenu(QMainWindow):
         layout = QHBoxLayout(group)
         self.start_button = QPushButton("🚀 启动镜像会话")
         self.start_otg_button = QPushButton("🎮 启动 OTG 模式")
+        self.preview_button = QPushButton("🔍 预览命令")
+        self.preview_button.setToolTip("查看将要执行的完整 scrcpy 命令行（方便排错与反馈问题）")
         self.start_button.clicked.connect(self.start_new_session)
         self.start_otg_button.clicked.connect(self.start_otg_session)
+        self.preview_button.clicked.connect(self.preview_command)
         layout.addWidget(self.start_button)
         layout.addWidget(self.start_otg_button)
+        layout.addWidget(self.preview_button)
         return group
 
     def connect_manager_signals(self):
@@ -192,16 +214,35 @@ class ScrcpyMainMenu(QMainWindow):
         else:
             self.audio_panel.audio_source_combo.setCurrentText("output (内部声音, 默认)")
 
-    def start_new_session(self):
+    def build_session_args(self, is_otg=False):
+        """把界面上所有面板的设置拼装成 scrcpy 命令行参数。
+
+        返回 (session_name_hint, cmd_args)；参数不合法时返回 (None, None)。
+        预览与启动共用这一份逻辑，避免「预览的和实际执行的不一致」。
+        """
         device_args = self.device_panel.get_args()
-        if device_args is None: return
+        if device_args is None:
+            return None, None
+
         if '-d' in device_args:
             session_name_hint = "USB"
         elif '-e' in device_args:
             session_name_hint = "TCP/IP"
         else:
             session_name_hint = device_args[1]
+
         cmd_args = list(device_args)
+
+        if is_otg:
+            # OTG 模式只认设备选择 + 键鼠手柄，其余设置一律忽略
+            if '--keyboard=disabled' in self.keyboard_panel.get_args():
+                cmd_args.append('--keyboard=disabled')
+            if '--mouse=disabled' in self.mouse_panel.get_args():
+                cmd_args.append('--mouse=disabled')
+            if '--gamepad=aoa' in self.gamepad_panel.get_args():
+                cmd_args.append('--gamepad=aoa')
+            return f"{session_name_hint}-OTG", cmd_args
+
         if self.source_camera_radio.isChecked():
             cmd_args.append('--video-source=camera')
             cmd_args.extend(self.camera_panel.get_args())
@@ -220,24 +261,68 @@ class ScrcpyMainMenu(QMainWindow):
         cmd_args.extend(self.gamepad_panel.get_args())
         cmd_args.extend(self.keyboard_panel.get_args())
         cmd_args.extend(self.mouse_panel.get_args())
+        return session_name_hint, cmd_args
+
+    @staticmethod
+    def format_command(cmd_args, is_otg=False):
+        """把参数列表拼成一条可复制、可粘贴到终端的命令。"""
+        base = ['scrcpy', '--otg'] if is_otg else ['scrcpy']
+        return ' '.join(shlex.quote(a) for a in base + cmd_args)
+
+    def preview_command(self):
+        """显示将要执行的完整命令行（排错/反馈问题时非常有用）。"""
+        lines = []
+        _, mirror_args = self.build_session_args(is_otg=False)
+        if mirror_args:
+            lines.append("[镜像会话]")
+            lines.append(self.format_command(mirror_args))
+        _, otg_args = self.build_session_args(is_otg=True)
+        if otg_args:
+            lines.append("")
+            lines.append("[OTG 模式]")
+            lines.append(self.format_command(otg_args, is_otg=True))
+        if not lines:
+            return
+        text = chr(10).join(lines)
+        self.log("--- 命令预览 ---")
+        for line in lines:
+            if line:
+                self.log(line)
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("命令预览")
+        dlg.resize(780, 280)
+        layout = QVBoxLayout(dlg)
+        layout.addWidget(QLabel("将执行以下命令（可全选复制）："))
+        edit = QPlainTextEdit(text)
+        edit.setReadOnly(True)
+        edit.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        layout.addWidget(edit)
+        buttons = QHBoxLayout()
+        copy_btn = QPushButton("复制到剪贴板")
+        copy_btn.clicked.connect(lambda: QApplication.clipboard().setText(text))
+        close_btn = QPushButton("关闭")
+        close_btn.clicked.connect(dlg.accept)
+        buttons.addStretch()
+        buttons.addWidget(copy_btn)
+        buttons.addWidget(close_btn)
+        layout.addLayout(buttons)
+        dlg.exec()
+
+    def start_new_session(self):
+        session_name_hint, cmd_args = self.build_session_args(is_otg=False)
+        if cmd_args is None:
+            return
         self.session_manager.start_session(session_name_hint, cmd_args, is_otg=False)
 
     def start_otg_session(self):
-        device_args = self.device_panel.get_args()
-        if device_args is None: return
-        if '-d' in device_args:
-            session_name_hint = "USB-OTG"
-        elif '-e' in device_args:
-            session_name_hint = "TCP-OTG"
-        else:
-            session_name_hint = f"{device_args[1]}-OTG"
-        cmd_args = list(device_args)
-        keyboard_args = self.keyboard_panel.get_args()
-        if '--keyboard=disabled' in keyboard_args: cmd_args.append('--keyboard=disabled')
-        mouse_args = self.mouse_panel.get_args()
-        if '--mouse=disabled' in mouse_args: cmd_args.append('--mouse=disabled')
-        gamepad_args = self.gamepad_panel.get_args()
-        if '--gamepad=aoa' in gamepad_args: cmd_args.append('--gamepad=aoa')
+        if self.device_panel.selection_mode == 'tcpip':
+            # --otg 需要真实 USB 连接的设备，-e（唯一的 TCP/IP 设备）必然失败
+            self.log("错误：OTG 模式需要 USB 连接的设备，不能使用『唯一的TCP/IP设备 (-e)』。")
+            return
+        session_name_hint, cmd_args = self.build_session_args(is_otg=True)
+        if cmd_args is None:
+            return
         self.log("注意：OTG 模式将忽略除设备选择、键鼠手柄之外的所有设置。")
         self.session_manager.start_session(session_name_hint, cmd_args, is_otg=True)
 
@@ -276,9 +361,16 @@ class ScrcpyMainMenu(QMainWindow):
 # -----------------------------------------------------------------------------
 # 程序主入口
 # -----------------------------------------------------------------------------
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
+def main(argv=None):
+    """GUI 入口（也作为 PyInstaller 与 console_scripts 的入口）。"""
+    app = QApplication(sys.argv if argv is None else argv)
+    app.setApplicationName("RIX Scrcpy GUI")
+    app.setApplicationVersion(__version__)
     app.setStyle(QStyleFactory.create('Fusion'))
-    main_menu = ScrcpyMainMenu()
-    main_menu.show()
-    sys.exit(app.exec())
+    window = ScrcpyMainMenu()
+    window.show()
+    return app.exec()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
