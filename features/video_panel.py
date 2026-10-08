@@ -90,6 +90,21 @@ class VideoPanel(QWidget):
     def set_log_emitter(self, log_emitter):
         self.log_emitter = log_emitter
 
+    def set_camera_mode(self, enabled: bool):
+        """摄像头模式下禁用与 --video-source=camera 冲突的项。
+
+        早期版本直接把整个「视频」页签禁掉，导致摄像头模式下无法设置码率、
+        编码器、方向、裁剪——这些对摄像头同样有意义。
+        """
+        self.display_id_input.setEnabled(not enabled)
+        self.list_displays_button.setEnabled(not enabled)
+        self.video_codec_combo.setEnabled(not enabled)
+        self.video_encoder_input.setEnabled(not enabled)
+        if enabled:
+            self.display_id_input.setToolTip("摄像头模式下由 --camera-id / --camera-facing 决定，--display-id 无效。")
+        else:
+            self.display_id_input.setToolTip("")
+
     def run_list_command(self, command):
         """运行列出信息的命令，并将结果打印到日志"""
         if not self.log_emitter: return

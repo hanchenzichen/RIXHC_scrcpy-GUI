@@ -240,6 +240,23 @@ def load_registry(generated_path: str = GENERATED_PATH, meta_path: str = META_PA
     return Registry(_read_json(generated_path), _read_json(meta_path))
 
 
+def dedupe_args(args: Sequence[str]) -> list[str]:
+    """去掉重复参数，后出现的覆盖先出现的，并保持原有相对顺序。
+
+    多个面板可能提供同一个开关（例如「不播放」在视频面板与录制面板里各有一份），
+    拼在一起会出现两个同名参数；scrcpy 只认最后一个，语义含糊。
+    """
+    rendered: dict[str, str] = {}
+    order: list[str] = []
+    for item in args:
+        key = item.split("=", 1)[0]
+        if key in rendered:
+            order.remove(key)
+        rendered[key] = item
+        order.append(key)
+    return [rendered[key] for key in order]
+
+
 def parse_assignments(items: Iterable[str]) -> dict:
     """把 ['video-bit-rate=16M', 'no-audio'] 解析成 {'video-bit-rate': '16M', 'no-audio': True}。"""
     values: dict = {}

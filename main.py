@@ -26,6 +26,7 @@ from features.shortcuts_panel import ShortcutsPanel
 from features.virtual_display_panel import VirtualDisplayPanel
 from features.v4l2_panel import V4l2Panel
 from features.developer_panel import DeveloperPanel
+from features.registry_panel import RegistryPanel
 
 try:
     from rix import __version__
@@ -41,6 +42,21 @@ def resource_path(name: str) -> str:
     """
     base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, name)
+
+
+try:
+    from rix.registry import dedupe_args
+except ImportError:  # 兼容只拷贝了 main.py 与 features/ 的极简运行方式
+    def dedupe_args(args):
+        rendered = {}
+        order = []
+        for item in args:
+            key = item.split('=', 1)[0]
+            if key in rendered:
+                order.remove(key)
+            rendered[key] = item
+            order.append(key)
+        return [rendered[key] for key in order]
 
 
 class ScrcpyMainMenu(QMainWindow):
@@ -139,6 +155,8 @@ class ScrcpyMainMenu(QMainWindow):
         self.v4l2_panel.set_log_emitter(self.log)
         self.developer_panel = DeveloperPanel()
         self.developer_panel.set_log_emitter(self.log)
+        self.registry_panel = RegistryPanel()
+        self.registry_panel.set_log_emitter(self.log)
 
         tabs.addTab(self.audio_panel, "音频")
         tabs.addTab(self.video_panel, "视频")
@@ -153,6 +171,7 @@ class ScrcpyMainMenu(QMainWindow):
         tabs.addTab(self.virtual_display_panel, "虚拟显示")
         tabs.addTab(self.v4l2_panel, "V4L2")
         tabs.addTab(self.developer_panel, "开发者")
+        tabs.addTab(self.registry_panel, "全部参数")
 
         if not sys.platform.startswith('linux'):
             v4l2_index = tabs.indexOf(self.v4l2_panel)
@@ -206,7 +225,9 @@ class ScrcpyMainMenu(QMainWindow):
 
     def on_source_changed(self, is_display_checked):
         is_camera_checked = not is_display_checked
-        self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.video_panel), is_display_checked)
+        # 视频页签在摄像头模式下**保持可用**：码率/编码器/方向/裁剪对摄像头同样有意义。
+        # 只禁用真正与 --video-source=camera 冲突的项（显示器 ID）。
+        self.video_panel.set_camera_mode(is_camera_checked)
         self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.virtual_display_panel), is_display_checked)
         self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.camera_panel), is_camera_checked)
         if is_camera_checked:
@@ -241,7 +262,7 @@ class ScrcpyMainMenu(QMainWindow):
                 cmd_args.append('--mouse=disabled')
             if '--gamepad=aoa' in self.gamepad_panel.get_args():
                 cmd_args.append('--gamepad=aoa')
-            return f"{session_name_hint}-OTG", cmd_args
+            return f"{session_name_hint}-OTG", dedupe_args(cmd_args)
 
         if self.source_camera_radio.isChecked():
             cmd_args.append('--video-source=camera')
@@ -261,7 +282,8 @@ class ScrcpyMainMenu(QMainWindow):
         cmd_args.extend(self.gamepad_panel.get_args())
         cmd_args.extend(self.keyboard_panel.get_args())
         cmd_args.extend(self.mouse_panel.get_args())
-        return session_name_hint, cmd_args
+        cmd_args.extend(self.registry_panel.get_args())
+        return session_name_hint, dedupe_args(cmd_args)
 
     @staticmethod
     def format_command(cmd_args, is_otg=False):

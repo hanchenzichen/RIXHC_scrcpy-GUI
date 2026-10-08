@@ -131,7 +131,7 @@ class VirtualDisplayPanel(QWidget):
         self.worker.moveToThread(self.thread)
         self.worker.command_finished_signal.connect(self.log_emitter)
 
-        if command_name == 'list_packages_with_names':
+        if command_name in ('list_packages_with_names', 'list_apps_via_scrcpy'):
             self.worker.packages_listed_signal.connect(self.populate_app_list)
 
         self.thread.started.connect(getattr(self.worker, command_name))
@@ -142,7 +142,7 @@ class VirtualDisplayPanel(QWidget):
         self.thread.start()
 
     def fetch_app_list(self):
-        self.run_adb_task('list_packages_with_names', "正在后台获取应用列表 (首次加载可能需要数分钟)...")
+        self.run_adb_task('list_apps_via_scrcpy', "正在后台获取应用列表（scrcpy --list-apps，通常几秒钟）...")
 
     def populate_app_list(self, app_list_data, from_cache=False):
         self.full_app_list_data = app_list_data

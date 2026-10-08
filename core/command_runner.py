@@ -153,6 +153,24 @@ class AdbWorker(QObject):
         except Exception as e:
             self.refreshed_signal.emit([], f"获取设备列表失败: {e}")
 
+    def list_apps_via_scrcpy(self):
+        """优先用 `scrcpy --list-apps` 获取可启动应用（一次调用、秒级、自带应用名）。
+
+        旧方案（adb + aapt）在绝大多数正式版 Android 上根本拿不到应用名，
+        还会因为逐条 adb 调用而耗时到分钟级，因此这里把它降级为兜底。
+        """
+        try:
+            from rix.apps import list_apps
+            apps = list_apps()
+            if apps:
+                self.packages_listed_signal.emit(apps)
+                self.command_finished_signal.emit(
+                    f"成功获取 {len(apps)} 个可启动应用（scrcpy --list-apps）。")
+                return
+        except Exception as exc:  # noqa: BLE001 - 任何失败都回退到旧方案
+            self.command_finished_signal.emit(f"scrcpy --list-apps 不可用（{exc}），改用 adb 方案…")
+        self.list_packages_with_names()
+
     def list_packages_with_names(self):
         try:
             self.command_finished_signal.emit("正在获取第三方应用包名...")

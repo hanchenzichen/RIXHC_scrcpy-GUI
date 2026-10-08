@@ -180,6 +180,25 @@ def cmd_profiles(args) -> int:
     return 1
 
 
+def cmd_apps(args) -> int:
+    """列出设备上可启动的应用（用 scrcpy --list-apps，比 aapt 方案快几个数量级）。"""
+    from rix.apps import list_apps
+
+    try:
+        apps = list_apps(binary=args.binary, serial=getattr(args, "serial", None))
+    except Exception as exc:  # noqa: BLE001
+        print(f"获取失败: {exc}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps(apps, ensure_ascii=False, indent=2))
+        return 0
+    for app in apps:
+        flag = "系统" if app["system"] else "用户"
+        print(f"[{flag}] {app['name']}  ({app['package']})")
+    print("共 %d 个可启动应用。" % len(apps))
+    return 0
+
+
 def cmd_vendor(args) -> int:
     """管理内置 scrcpy 核心（下载官方发布包并校验 SHA256）。"""
     if args.action == "status":
@@ -285,6 +304,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--set", action="append", metavar="KEY=VALUE")
     p.add_argument("--path", default="profiles.json")
     p.set_defaults(func=cmd_profiles)
+
+    p = sub.add_parser("apps", help="列出设备上可启动的应用")
+    p.add_argument("--serial", help="设备序列号")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--binary", help="scrcpy 可执行文件路径")
+    p.set_defaults(func=cmd_apps)
 
     p = sub.add_parser("vendor", help="管理内置 scrcpy 核心")
     p.add_argument("action", choices=["status", "install", "path"])

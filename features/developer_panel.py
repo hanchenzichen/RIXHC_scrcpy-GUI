@@ -72,10 +72,18 @@ class DeveloperPanel(QWidget):
         server_layout.addWidget(self.standalone_options_widget)
 
         # --- 分组4: 调试 ---
+        # 注意：曾经这里有一个「启用 Server 调试器 (--server-debugger)」开关，
+        # 但该参数**从未存在于任何 scrcpy 版本**（它只是构建期 meson 选项
+        # -Dserver_debugger=true）。勾选后 scrcpy 会以 unrecognized option 直接退出，
+        # 所以这里改为说明文字。
         debug_group = QGroupBox("调试")
-        debug_layout = QFormLayout(debug_group)
-        self.server_debugger_check = QCheckBox("启用 Server 调试器 (--server-debugger)")
-        debug_layout.addRow(self.server_debugger_check)
+        debug_layout = QVBoxLayout(debug_group)
+        self.server_debugger_label = QLabel(
+            "Server 调试器不是命令行参数：需要自行用 meson 编译带调试器的 server（-Dserver_debugger=true），"
+            "再配合 --server-path 使用。"
+        )
+        self.server_debugger_label.setWordWrap(True)
+        debug_layout.addWidget(self.server_debugger_label)
 
         # --- 最终布局 ---
         main_layout.addWidget(connection_group)
@@ -147,7 +155,4 @@ class DeveloperPanel(QWidget):
         if port := self.tunnel_port_input.text().strip():
             args.extend(['--tunnel-port', port])
 
-        if self.server_debugger_check.isChecked():
-            args.append('--server-debugger')
-
-        return args
+            return args

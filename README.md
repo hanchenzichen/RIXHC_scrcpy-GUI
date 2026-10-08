@@ -15,6 +15,10 @@ GUI, TUI and CLI front-ends sharing one headless core.
 - **📱 连接管理器**：USB / 无线连接、USB 自动配对、多设备选择。
 - **🚀 多开会话**：同时管理多个 scrcpy 实例，各自独立配置。
 - **🎬 全参数覆盖**：由 `app/src/cli.c` 自动生成的**选项注册表**驱动，当前覆盖 scrcpy **109/109** 个长参数（含 vp8/vp9、m4a/mka/aac、`--capture-orientation`、`--flex-display`、`--camera-zoom`、`--hwdec` 等新参数）。
+- **📦 内置 scrcpy 核心**：随程序分发**官方发布包**（含 adb），下载时用上游 `SHA256SUMS.txt` 校验，
+  解包后原样保留上游 LICENSE。不再需要用户自己装 scrcpy 或配 PATH。
+- **🧩 「全部参数」页签**：由注册表自动渲染，GUI 里也能设置全部 109 个参数。
+- **⚡ 秒级应用列表**：用 `scrcpy --list-apps` 取可启动应用（旧方案依赖设备上的 aapt，多数手机根本没有）。
 - **🔍 命令预览**：启动前可查看并复制完整命令行，排错不用再猜。
 - **💾 配置预设**：把常用组合存成 profile，一键复用。
 - **🧭 三种前端**：Windows/Linux 桌面 GUI、跨平台 TUI、可脚本化的 CLI。
@@ -33,8 +37,9 @@ GUI, TUI and CLI front-ends sharing one headless core.
 ### 依赖
 
 1. **Python 3.10+**
-2. **scrcpy** 与 **adb**：需能在命令行直接运行（本程序**不捆绑**它们）。
-   如果你用的是 scrcpy 解压版，可设置环境变量 `RIX_SCRCPY` 指向 `scrcpy.exe`。
+2. **scrcpy** 与 **adb**：**通常不需要自己安装**——发布包已内置官方 scrcpy 核心（含 adb）。
+   如果你已有自己的版本，查找优先级为：
+   `RIX_SCRCPY` 环境变量 → 内置核心 → 用户目录（`vendor install`）→ 系统 PATH。
 3. Python 依赖：
 
 ```bash
@@ -51,7 +56,9 @@ python main.py
 ### CLI（无需图形环境）
 
 ```bash
-rix-scrcpy doctor                       # 体检：scrcpy/adb/版本/参数
+rix-scrcpy doctor                       # 体检：内置核心/scrcpy/adb/版本/参数
+rix-scrcpy vendor install               # 下载官方 scrcpy 核心（SHA256 校验）
+rix-scrcpy apps --json                  # 列出设备上可启动的应用（秒级）
 rix-scrcpy options --search codec -v    # 浏览全部参数
 rix-scrcpy check --set video-bit-rate=16M --set capture-orientation=90
 rix-scrcpy run --set max-fps=60 --set no-audio --print
@@ -113,7 +120,8 @@ tools/
   gen_options.py         从上游 cli.c 生成注册表
   check_version.py       版本一致性校验（CI 用）
   smoke_gui.py           GUI 无头自检（CI 用）
-tests/                   52 个单元测试
+tests/                   69 个单元测试
+docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）
 RIX_Scrcpy.spec          GUI 打包配置（onedir）
 RIX_Scrcpy_CLI.spec      CLI 打包配置（onefile）
 ci/workflows/            GitHub Actions 工作流定义（用 install_workflows.py 安装）
@@ -141,9 +149,21 @@ python tools/check_version.py              # 版本一致性
 > 之所以不直接放在 `.github/workflows/`：某些自动化凭证没有 `workflows` 权限，
 > 推送该目录会被 GitHub 拒绝。用你自己的账号（或已授权的 token）推送即可。
 
+### 内置核心是怎么来的
+
+构建时由 CI 执行（见 `ci/workflows/build.yml`）：
+
+```bash
+python -m rix.vendor install --version 5.0.1 --target vendor/scrcpy
+```
+
+它会下载官方发布包 → 用 `SHA256SUMS.txt` 校验 → 解包到 `vendor/scrcpy/`，
+然后由 `RIX_Scrcpy.spec` 一起打进安装包。升级 scrcpy 只需改工作流里的
+`SCRCPY_VERSION`。合规说明见 `THIRD_PARTY_NOTICES.md`。
+
 | 工作流 | 触发 | 作用 |
 | --- | --- | --- |
-| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、52 个单元测试、GUI 无头自检 |
+| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、69 个单元测试、GUI 无头自检；另有「内置核心端到端」作业真实下载官方 scrcpy 并执行 |
 | `build.yml` | 打 `v*` tag 或手动 | 打包 Windows/Linux 的 GUI（onedir）与 CLI（onefile），打 tag 时自动创建 Release |
 | `upstream-drift.yml` | 每周一 / 手动 | 对比上游 scrcpy 参数，有变化自动开 Issue |
 
@@ -153,6 +173,7 @@ CI 会校验 tag 与代码版本一致，然后构建全部产物并创建 Relea
 ## ⚠️ 关于许可证（重要）
 
 - 本项目使用 **PySide6（LGPL v3）** 而不是 PyQt6（GPL v3），因此可以合法地以 **MIT** 分发打包好的程序。
-- 本项目**不捆绑** scrcpy（Apache-2.0）与 adb（Android platform-tools），需要用户自行安装，
-  这样既避免许可证问题，也避免体积膨胀。
+- 发布包内置的是**未经修改的官方 scrcpy 发布包**（Apache-2.0，其中也包含 adb），
+  上游 `LICENSE` 文件原样保留在包内 `scrcpy/` 目录，并有 `SHA256` 校验；
+  详见 `THIRD_PARTY_NOTICES.md`。不想用内置核心的话，删掉 `scrcpy/` 目录即可自动回退到系统 PATH。
 - Windows 上未签名的 exe 首次运行会触发 SmartScreen 提示，点「更多信息」→「仍要运行」即可。

@@ -22,6 +22,7 @@ PANELS = (
     "device_panel", "audio_panel", "video_panel", "camera_panel", "keyboard_panel",
     "mouse_panel", "gamepad_panel", "recording_panel", "control_panel", "window_panel",
     "shortcuts_panel", "virtual_display_panel", "v4l2_panel", "developer_panel",
+    "registry_panel",
 )
 
 
@@ -76,6 +77,16 @@ def main() -> int:
         window.format_command(["--no-audio"])
     except Exception as exc:  # noqa: BLE001
         failures.append(f"format_command 抛异常: {exc!r}")
+
+    # 4.5 注册表面板必须覆盖全部参数，且不能出现幽灵参数
+    registry_panel = getattr(window, "registry_panel", None)
+    if registry_panel is not None and registry_panel.registry is not None:
+        total = registry_panel.registry.option_count
+        rendered = len(registry_panel._editors)
+        if rendered != total:
+            failures.append(f"注册表面板只渲染了 {rendered}/{total} 个参数")
+        if "server-debugger" in registry_panel.registry:
+            failures.append("注册表里出现了从未存在的参数 --server-debugger")
 
     # 5. 干净退出（会触发 closeEvent → 停止所有会话）
     window.close()
