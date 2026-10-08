@@ -1,0 +1,1106 @@
+{
+  "option_count": 109,
+  "options": [
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Make scrcpy window always on top (above other windows).",
+      "long": "always-on-top",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "degrees",
+      "enum": [],
+      "help": "Rotate the video content by a custom angle, in degrees (clockwise).",
+      "long": "angle",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Encode the audio at the given bit rate, expressed in bits/s. Unit suffixes are supported: 'K' (x1000) and 'M' (x1000000).\nDefault is 128K (128000).",
+      "long": "audio-bit-rate",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "ms",
+      "enum": [],
+      "help": "Configure the audio buffering delay (in milliseconds).\nLower values decrease the latency, but increase the likelihood of buffer underrun (causing audio glitches).\nDefault is 50.",
+      "long": "audio-buffer",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "name",
+      "enum": [
+        "opus",
+        "aac",
+        "flac",
+        "raw"
+      ],
+      "help": "Select an audio codec (opus, aac, flac or raw).\nDefault is opus.",
+      "long": "audio-codec",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "key[:type]=value[,...]",
+      "enum": [],
+      "help": "Set a list of comma-separated key:type=value options for the device audio encoder.\nThe possible values for 'type' are 'int' (default), 'long', 'float' and 'string'.\nThe list of possible codec options is available in the Android documentation: <https://d.android.com/reference/android/media/MediaFormat>",
+      "long": "audio-codec-options",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Duplicate audio (capture and keep playing on the device).\nThis feature is only available with --audio-source=playback.",
+      "long": "audio-dup",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "name",
+      "enum": [],
+      "help": "Use a specific MediaCodec audio encoder (depending on the codec provided by --audio-codec).\nThe available encoders can be listed by --list-encoders.",
+      "long": "audio-encoder",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "ms",
+      "enum": [],
+      "help": "Configure the size of the SDL audio output buffer (in milliseconds).\nDo not change this setting unless you have a good reason.\nDefault is 10.",
+      "long": "audio-output-buffer",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "source",
+      "enum": [
+        "mic",
+        "output",
+        "playback",
+        "mic-unprocessed",
+        "mic-camcorder",
+        "mic-voice-recognition",
+        "mic-voice-communication",
+        "voice-call",
+        "voice-call-uplink",
+        "voice-call-downlink",
+        "voice-performance"
+      ],
+      "help": "Select the audio source. Possible values are:\n - \"output\": forwards the whole audio output, and disables playback on the device.\n - \"playback\": captures the audio playback (Android apps can opt-out, so the whole output is not necessarily captured).\n - \"mic\": captures the microphone.\n - \"mic-unprocessed\": captures the microphone unprocessed (raw) sound.\n - \"mic-camcorder\": captures the microphone tuned for video recording, with the same orientation as the camera if available.\n - \"mic-voice-recognition\": captures the microphone tuned for voice recognition.\n - \"mic-voice-communication\": captures the microphone tuned for voice communications (it will for instance take advantage of echo cancellation or automatic gain control if available).\n - \"voice-call\": captures voice call.\n - \"voice-call-uplink\": captures voice call uplink only.\n - \"voice-call-downlink\": captures voice call downlink only.\n - \"voice-performance\": captures audio meant to be processed for live performance (karaoke), includes both the microphone and the device playback.\nDefault is output.",
+      "long": "audio-source",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "hexcolor",
+      "enum": [],
+      "help": "Set the background color, encoded as hexadecimal color code (#RGB or #RRGGBB).\nDefault is #222 (dark gray).",
+      "long": "background-color",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "ar",
+      "enum": [],
+      "help": "Select the camera size by its aspect ratio (+/- 10%).\nPossible values are \"sensor\" (use the camera sensor aspect ratio), \"<num>:<den>\" (e.g. \"4:3\") or \"<value>\" (e.g. \"1.6\").",
+      "long": "camera-ar",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "facing",
+      "enum": [
+        "front",
+        "back",
+        "external"
+      ],
+      "help": "Select the device camera by its facing direction.\nPossible values are \"front\", \"back\" and \"external\".",
+      "long": "camera-facing",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Specify the camera capture frame rate.\nIf not specified, Android's default frame rate (30 fps) is used.",
+      "long": "camera-fps",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Enable high-speed camera capture mode.\nThis mode is restricted to specific resolutions and frame rates, listed by --list-camera-sizes.",
+      "long": "camera-high-speed",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "id",
+      "enum": [],
+      "help": "Specify the device camera id to mirror.\nThe available camera ids can be listed by:\n    scrcpy --list-cameras",
+      "long": "camera-id",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "<width>x<height>",
+      "enum": [],
+      "help": "Specify an explicit camera capture size.",
+      "long": "camera-size",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Turn on the camera torch when the camera starts.",
+      "long": "camera-torch",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "zoom",
+      "enum": [],
+      "help": "Specify the camera zoom initial value.",
+      "long": "camera-zoom",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "0",
+        "90",
+        "180",
+        "270",
+        "flip0",
+        "flip90",
+        "flip180",
+        "flip270"
+      ],
+      "help": "Set the capture video orientation.\nPossible values are 0, 90, 180, 270, flip0, flip90, flip180 and flip270, possibly prefixed by '@'.\nThe number represents the clockwise rotation in degrees; the flip\" keyword applies a horizontal flip before the rotation.\nIf a leading '@' is passed (@90) for display capture, then the rotation is locked, and is relative to the natural device orientation.\nIf '@' is passed alone, then the rotation is locked to the initial device orientation.\nDefault is 0.",
+      "long": "capture-orientation",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "width:height:x:y",
+      "enum": [],
+      "help": "Crop the device screen on the server.\nThe values are expressed in the device natural orientation (typically, portrait for a phone, landscape for a tablet).",
+      "long": "crop",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable screensaver while scrcpy is running.",
+      "long": "disable-screensaver",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "id",
+      "enum": [],
+      "help": "Specify the device display id to mirror.\nThe available display ids can be listed by:\n    scrcpy --list-displays\nDefault is 0.",
+      "long": "display-id",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "local",
+        "fallback",
+        "hide"
+      ],
+      "help": "Set the policy for selecting where the IME should be displayed.\nPossible values are \"local\", \"fallback\" and \"hide\".\n\"local\" means that the IME should appear on the local display.\n\"fallback\" means that the IME should appear on a fallback display (the default display).\n\"hide\" means that the IME should be hidden.",
+      "long": "display-ime-policy",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "0",
+        "90",
+        "180",
+        "270",
+        "flip0",
+        "flip90",
+        "flip180",
+        "flip270"
+      ],
+      "help": "Set the initial display orientation.\nPossible values are 0, 90, 180, 270, flip0, flip90, flip180 and flip270. The number represents the clockwise rotation in degrees; the \"flip\" keyword applies a horizontal flip before the rotation.\nDefault is 0.",
+      "long": "display-orientation",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Continuously resize the virtual display to match the window.",
+      "long": "flex-display",
+      "optional_arg": false,
+      "short": "x",
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Do not attempt to use \"adb reverse\" to connect to the device.",
+      "long": "force-adb-forward",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Start in fullscreen.",
+      "long": "fullscreen",
+      "optional_arg": false,
+      "short": "f",
+      "takes_value": false
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "disabled",
+        "uhid",
+        "aoa"
+      ],
+      "help": "Select how to send gamepad inputs to the device.\nPossible values are \"disabled\", \"uhid\" and \"aoa\".\n\"disabled\" does not send gamepad inputs to the device.\n\"uhid\" simulates physical HID gamepads using the Linux UHID kernel module on the device.\n\"aoa\" simulates physical gamepads using the AOAv2 protocol.It may only work over USB.\nAlso see --keyboard and --mouse.",
+      "long": "gamepad",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Print this help.",
+      "long": "help",
+      "optional_arg": false,
+      "short": "h",
+      "takes_value": false
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "auto",
+        "disabled",
+        "vaapi",
+        "d3d11va",
+        "videotoolbox"
+      ],
+      "help": "Configure hardware video decoding on the computer.\nPossible values are \"auto\" (the first available hardware decoder, software decoding otherwise), \"disabled\" (always use software decoding), \"vaapi\" (Linux only), \"d3d11va\" (Windows only) and \"videotoolbox\" (macOS only).\nDefault is \"auto\".",
+      "long": "hwdec",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Do not consider video encoder capabilities.\nThis is useful if the reported capabilities are incorrect.\nIt may help to force a value for --min-size-alignment.",
+      "long": "ignore-video-encoder-constraints",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Keep the screen on by simulating user activity.",
+      "long": "keep-active",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "disabled",
+        "sdk",
+        "uhid",
+        "aoa"
+      ],
+      "help": "Select how to send keyboard inputs to the device.\nPossible values are \"disabled\", \"sdk\", \"uhid\" and \"aoa\".\n\"disabled\" does not send keyboard inputs to the device.\n\"sdk\" uses the Android system API to deliver keyboard events to applications.\n\"uhid\" simulates a physical HID keyboard using the Linux UHID kernel module on the device.\n\"aoa\" simulates a physical keyboard using the AOAv2 protocol. It may only work over USB.\nFor \"uhid\" and \"aoa\", the keyboard layout must be configured (once and for all) on the device, via Settings -> System -> Languages and input -> Physical keyboard. This settings page can be started directly using the shortcut MOD+k (except in OTG mode) or by executing: `adb shell am start -a android.settings.HARD_KEYBOARD_SETTINGS`.\nThis option is only available when a HID keyboard is enabled (or a physical keyboard is connected).\nAlso see --mouse and --gamepad.",
+      "long": "keyboard",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Kill adb when scrcpy terminates.",
+      "long": "kill-adb-on-close",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Inject computer clipboard text as a sequence of key events on Ctrl+v (like MOD+Shift+v).\nThis is a workaround for some devices not behaving as expected when setting the device clipboard programmatically.",
+      "long": "legacy-paste",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "List Android apps installed on the device.",
+      "long": "list-apps",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "List the valid camera capture sizes.",
+      "long": "list-camera-sizes",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "List device cameras.",
+      "long": "list-cameras",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "List device displays.",
+      "long": "list-displays",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "List video and audio encoders available on the device.",
+      "long": "list-encoders",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Limit the frame rate of screen capture (officially supported since Android 10, but may work on earlier versions).",
+      "long": "max-fps",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Limit both the width and height of the video.\nFor display mirroring, the other dimension is computed so that the device aspect ratio is preserved (except for flex displays).\nFor camera mirroring, the value is used to select the camera source size instead.\nDefault is 0 (unlimited).",
+      "long": "max-size",
+      "optional_arg": false,
+      "short": "m",
+      "takes_value": true
+    },
+    {
+      "argdesc": "alignment",
+      "enum": [],
+      "help": "Configure the minimum video size alignment.\nThis is a power-of-2 value (1, 2, 4, 8 or 16) that the video width and height must be multiples of.\nThe actual alignment will be the maximum of this value and the video codec's alignment requirement.\nDefault is 1.",
+      "long": "min-size-alignment",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "disabled",
+        "sdk",
+        "uhid",
+        "aoa"
+      ],
+      "help": "Select how to send mouse inputs to the device.\nPossible values are \"disabled\", \"sdk\", \"uhid\" and \"aoa\".\n\"disabled\" does not send mouse inputs to the device.\n\"sdk\" uses the Android system API to deliver mouse eventsto applications.\n\"uhid\" simulates a physical HID mouse using the Linux UHID kernel module on the device.\n\"aoa\" simulates a physical mouse using the AOAv2 protocol. It may only work over USB.\nIn \"uhid\" and \"aoa\" modes, the computer mouse is captured to control the device directly (relative mouse mode).\nLAlt, LSuper or RSuper toggle the capture mode, to give control of the mouse back to the computer.\nAlso see --keyboard and --gamepad.",
+      "long": "mouse",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "xxxx[:xxxx]",
+      "enum": [],
+      "help": "Configure bindings of secondary clicks.\nThe argument must be one or two sequences (separated by ':') of exactly 4 characters, one for each secondary click (in order: right click, middle click, 4th click, 5th click).\nThe first sequence defines the primary bindings, used when a mouse button is pressed alone. The second sequence defines the secondary bindings, used when a mouse button is pressed while the Shift key is held.\nIf the second sequence of bindings is omitted, then it is the same as the first one.\nEach character must be one of the following:\n '+': forward the click to the device\n '-': ignore the click\n 'b': trigger shortcut BACK (or turn screen on if off)\n 'h': trigger shortcut HOME\n 's': trigger shortcut APP_SWITCH\n 'n': trigger shortcut \"expand notification panel\"\nDefault is 'bhsn:++++' for SDK mouse, and '++++:bhsn' for AOA and UHID.",
+      "long": "mouse-bind",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "[<width>x<height>][/<dpi>]",
+      "enum": [],
+      "help": "Create a new display with the specified resolution and density. If not provided, they default to the main display dimensions and DPI.\nExamples:\n    --new-display=1920x1080\n    --new-display=1920x1080/420  # force 420 dpi\n    --new-display         # main display size and density\n    --new-display=/240    # main display size and 240 dpi",
+      "long": "new-display",
+      "optional_arg": true,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable audio forwarding.",
+      "long": "no-audio",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable audio playback on the computer.",
+      "long": "no-audio-playback",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "By default, scrcpy removes the server binary from the device and restores the device state (show touches, stay awake and power mode) on exit.\nThis option disables this cleanup.",
+      "long": "no-cleanup",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "By default, scrcpy automatically synchronizes the computer clipboard to the device clipboard before injecting Ctrl+v, and the device clipboard to the computer clipboard whenever it changes.\nThis option disables this automatic synchronization.",
+      "long": "no-clipboard-autosync",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable device control (mirror the device in read-only).",
+      "long": "no-control",
+      "optional_arg": false,
+      "short": "n",
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "By default, on MediaCodec error, scrcpy automatically tries again with a lower definition.\nThis option disables this behavior.",
+      "long": "no-downsize-on-error",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Do not forward repeated key events when a key is held down.",
+      "long": "no-key-repeat",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "If the renderer is OpenGL 3.0+ or OpenGL ES 2.0+, then mipmaps are automatically generated to improve downscaling quality. This option disables the generation of mipmaps.",
+      "long": "no-mipmaps",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Do not forward mouse hover (mouse motion without any clicks) events.",
+      "long": "no-mouse-hover",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable video and audio playback on the computer (equivalent to --no-video-playback --no-audio-playback).",
+      "long": "no-playback",
+      "optional_arg": false,
+      "short": "N",
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Do not power on the device on start.",
+      "long": "no-power-on",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable terminal title updates.",
+      "long": "no-terminal-title",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable virtual display \"destroy content on removal\" flag.\nWith this option, when the virtual display is closed, the running apps are moved to the main display rather than being destroyed.",
+      "long": "no-vd-destroy-content",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable virtual display system decorations flag.",
+      "long": "no-vd-system-decorations",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable video forwarding.",
+      "long": "no-video",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable video playback on the computer.",
+      "long": "no-video-playback",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable scrcpy window. Implies --no-video-playback.",
+      "long": "no-window",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable window aspect ratio lock.",
+      "long": "no-window-aspect-ratio-lock",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "0",
+        "90",
+        "180",
+        "270",
+        "flip0",
+        "flip90",
+        "flip180",
+        "flip270"
+      ],
+      "help": "Same as --display-orientation=value --record-orientation=value.",
+      "long": "orientation",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Run in OTG mode: simulate physical keyboard and mouse, as if the computer keyboard and mouse were plugged directly to the device via an OTG cable.\nIn this mode, adb (USB debugging) is not necessary, and mirroring is disabled.\nLAlt, LSuper or RSuper toggle the mouse capture mode, to give control of the mouse back to the computer.\nKeyboard and mouse may be disabled separately using--keyboard=disabled and --mouse=disabled.\nIt may only work over USB.\nSee --keyboard, --mouse and --gamepad.",
+      "long": "otg",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "true",
+        "false",
+        "if-error"
+      ],
+      "help": "Configure pause on exit. Possible values are \"true\" (always pause on exit), \"false\" (never pause on exit) and \"if-error\" (pause only if an error occurred).\nThis is useful to prevent the terminal window from automatically closing, so that error messages can be read.\nDefault is \"false\".\nPassing the option without argument is equivalent to passing \"true\".",
+      "long": "pause-on-exit",
+      "optional_arg": true,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "port[:port]",
+      "enum": [],
+      "help": "Set the TCP port (range) used by the client to listen.\nDefault is :.",
+      "long": "port",
+      "optional_arg": false,
+      "short": "p",
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Turn the device screen off when closing scrcpy.",
+      "long": "power-off-on-close",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Inject alpha characters and space as text events instead of key events.\nThis avoids issues when combining multiple keys to enter a special character, but breaks the expected behavior of alpha keys in games (typically WASD).",
+      "long": "prefer-text",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Start FPS counter, to print framerate logs to the console. It can be started or stopped at any time with MOD+i.",
+      "long": "print-fps",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "path",
+      "enum": [],
+      "help": "Set the target directory for pushing files to the device by drag & drop. It is passed as is to \"adb push\".\nDefault is \"/sdcard/Download/\".",
+      "long": "push-target",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Inject key events for all input keys, and ignore text events.",
+      "long": "raw-key-events",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "file.mp4",
+      "enum": [],
+      "help": "Record screen to file.\nThe format is determined by the --record-format option if set, or by the file extension.",
+      "long": "record",
+      "optional_arg": false,
+      "short": "r",
+      "takes_value": true
+    },
+    {
+      "argdesc": "format",
+      "enum": [
+        "mp4",
+        "mkv",
+        "m4a",
+        "mka",
+        "opus",
+        "aac",
+        "flac",
+        "wav"
+      ],
+      "help": "Force recording format (mp4, mkv, m4a, mka, opus, aac, flac or wav).",
+      "long": "record-format",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "0",
+        "90",
+        "180",
+        "270",
+        "flip0",
+        "flip90",
+        "flip180",
+        "flip270"
+      ],
+      "help": "Set the record orientation.\nPossible values are 0, 90, 180 and 270. The number represents the clockwise rotation in degrees.\nDefault is 0.",
+      "long": "record-orientation",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "name",
+      "enum": [],
+      "help": "Request SDL to use the given render driver (this is just a hint).\nSupported names are currently \"direct3d\", \"opengl\", \"opengles2\", \"opengles\", \"metal\" and \"software\".\n<https://wiki.libsdl.org/SDL_HINT_RENDER_DRIVER>",
+      "long": "render-driver",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "mode",
+      "enum": [
+        "letterbox",
+        "stretched",
+        "unscaled"
+      ],
+      "help": "Set the render-fit mode to configure how the rendering fits the window.\nPossible values are \"letterbox\", \"stretched\" and \"unscaled\".\n\"letterbox\": preserve the aspect ratio and fit the window as best as possible (black bars are added either at the top and bottom or at the sides if needed).\n\"stretched\": fit the window without preserving the aspect ratio.\n\"unscaled\": render the display without scaling.\nDefault is \"letterbox\", unless --flex-display is set, in which case it is \"unscaled\".",
+      "long": "render-fit",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "By default, scrcpy mirrors only the video when audio capture fails on the device. This option makes scrcpy fail if audio is enabled but does not work.",
+      "long": "require-audio",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "seconds",
+      "enum": [],
+      "help": "Set the screen off timeout while scrcpy is running (restore the initial value on exit).",
+      "long": "screen-off-timeout",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Use TCP/IP device (if there is exactly one, like adb -e).\nAlso see -d (--select-usb).",
+      "long": "select-tcpip",
+      "optional_arg": false,
+      "short": "e",
+      "takes_value": false
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Use USB device (if there is exactly one, like adb -d).\nAlso see -e (--select-tcpip).",
+      "long": "select-usb",
+      "optional_arg": false,
+      "short": "d",
+      "takes_value": false
+    },
+    {
+      "argdesc": "serial",
+      "enum": [],
+      "help": "The device serial number. Mandatory only if several devices are connected to adb.",
+      "long": "serial",
+      "optional_arg": false,
+      "short": "s",
+      "takes_value": true
+    },
+    {
+      "argdesc": "key[+...][,...]",
+      "enum": [
+        "lctrl",
+        "rctrl",
+        "lalt",
+        "ralt",
+        "lsuper",
+        "rsuper"
+      ],
+      "help": "Specify the modifiers to use for scrcpy shortcuts.\nPossible keys are \"lctrl\", \"rctrl\", \"lalt\", \"ralt\", \"lsuper\" and \"rsuper\".\nSeveral shortcut modifiers can be specified, separated by ','.\nFor example, to use either LCtrl or LSuper for scrcpy shortcuts, pass \"lctrl,lsuper\".\nDefault is \"lalt,lsuper\" (left-Alt or left-Super).",
+      "long": "shortcut-mod",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Enable \"show touches\" on start, restore the initial value on exit.\nIt only shows physical touches (not clicks from scrcpy).",
+      "long": "show-touches",
+      "optional_arg": false,
+      "short": "t",
+      "takes_value": false
+    },
+    {
+      "argdesc": "name",
+      "enum": [],
+      "help": "Start an Android app, by its exact package name.\nAdd a '?' prefix to select an app whose name starts with the given name, case-insensitive (retrieving app names on the device may take some time):\n    scrcpy --start-app=?firefox\nAdd a '+' prefix to force-stop before starting the app:\n    scrcpy --new-display --start-app=+org.mozilla.firefox\nBoth prefixes can be used, in that order:\n    scrcpy --start-app=+?firefox",
+      "long": "start-app",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Keep the device on while scrcpy is running, when the device is plugged in.",
+      "long": "stay-awake",
+      "optional_arg": false,
+      "short": "w",
+      "takes_value": false
+    },
+    {
+      "argdesc": "[+]ip[:port]",
+      "enum": [],
+      "help": "Configure and connect the device over TCP/IP.\nIf a destination address is provided, then scrcpy connects to this address before starting. The device must listen on the given TCP port (default is 5555).\nIf no destination address is provided, then scrcpy attempts to find the IP address of the current device (typically connected over USB), enables TCP/IP mode, then connects to this address before starting.\nPrefix the address with a '+' to force a reconnection.",
+      "long": "tcpip",
+      "optional_arg": true,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "seconds",
+      "enum": [],
+      "help": "Set the maximum mirroring time, in seconds.",
+      "long": "time-limit",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "ip",
+      "enum": [],
+      "help": "Set the IP address of the adb tunnel to reach the scrcpy server. This option automatically enables --force-adb-forward.\nDefault is localhost.",
+      "long": "tunnel-host",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "port",
+      "enum": [],
+      "help": "Set the TCP port of the adb tunnel to reach the scrcpy server. This option automatically enables --force-adb-forward.\nDefault is 0 (not forced): the local port used for establishing the tunnel will be used.",
+      "long": "tunnel-port",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Turn the device screen off immediately.",
+      "long": "turn-screen-off",
+      "optional_arg": false,
+      "short": "S",
+      "takes_value": false
+    },
+    {
+      "argdesc": "ms",
+      "enum": [],
+      "help": "Add a buffering delay (in milliseconds) before pushing frames. This increases latency to compensate for jitter.\nThis option is similar to --video-buffer, but specific to V4L2 sink.\nDefault is 0 (no buffering).\nThis option is only available on Linux.",
+      "long": "v4l2-buffer",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "/dev/videoN",
+      "enum": [],
+      "help": "Output to v4l2loopback device.\nThis feature is only available on Linux.",
+      "long": "v4l2-sink",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Set the log level (verbose, debug, info, warn or error).\nDefault is debug.Default is info.",
+      "long": "verbosity",
+      "optional_arg": false,
+      "short": "V",
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Print the version of scrcpy.",
+      "long": "version",
+      "optional_arg": false,
+      "short": "v",
+      "takes_value": false
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Encode the video at the given bit rate, expressed in bits/s. Unit suffixes are supported: 'K' (x1000) and 'M' (x1000000).\nDefault is 8M (8000000).",
+      "long": "video-bit-rate",
+      "optional_arg": false,
+      "short": "b",
+      "takes_value": true
+    },
+    {
+      "argdesc": "ms",
+      "enum": [],
+      "help": "Add a buffering delay (in milliseconds) before displaying video frames.\nThis increases latency to compensate for jitter.\nDefault is 0 (no buffering).",
+      "long": "video-buffer",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "name",
+      "enum": [
+        "h264",
+        "h265",
+        "av1",
+        "vp8",
+        "vp9"
+      ],
+      "help": "Select a video codec (h264, h265, av1, vp8 or vp9).\nDefault is h264.",
+      "long": "video-codec",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "key[:type]=value[,...]",
+      "enum": [],
+      "help": "Set a list of comma-separated key:type=value options for the device video encoder.\nThe possible values for 'type' are 'int' (default), 'long', 'float' and 'string'.\nThe list of possible codec options is available in the Android documentation: <https://d.android.com/reference/android/media/MediaFormat>",
+      "long": "video-codec-options",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "name",
+      "enum": [],
+      "help": "Use a specific MediaCodec video encoder (depending on the codec provided by --video-codec).\nThe available encoders can be listed by --list-encoders.",
+      "long": "video-encoder",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "source",
+      "enum": [
+        "display",
+        "camera"
+      ],
+      "help": "Select the video source (display or camera).\nCamera mirroring requires Android 12+.\nDefault is display.",
+      "long": "video-source",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": null,
+      "enum": [],
+      "help": "Disable window decorations (display borderless window).",
+      "long": "window-borderless",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": false
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Set the initial window height.\nDefault is 0 (automatic).",
+      "long": "window-height",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "text",
+      "enum": [],
+      "help": "Set a custom window title.",
+      "long": "window-title",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [],
+      "help": "Set the initial window width.\nDefault is 0 (automatic).",
+      "long": "window-width",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "auto"
+      ],
+      "help": "Set the initial window horizontal position.\nDefault is \"auto\".",
+      "long": "window-x",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    },
+    {
+      "argdesc": "value",
+      "enum": [
+        "auto"
+      ],
+      "help": "Set the initial window vertical position.\nDefault is \"auto\".",
+      "long": "window-y",
+      "optional_arg": false,
+      "short": null,
+      "takes_value": true
+    }
+  ],
+  "schema": 1,
+  "source": "/tmp/scrcpy-upstream/app/src/cli.c"
+}

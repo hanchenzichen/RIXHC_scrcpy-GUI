@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
                              QLineEdit, QCheckBox, QHBoxLayout, QLabel)
 
 

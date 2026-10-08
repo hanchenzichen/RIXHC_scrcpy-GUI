@@ -1,0 +1,40 @@
+MIT License
+
+Copyright (c) 2025-2026 hanchenzichen (韩晨)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third-party notices / 第三方说明
+
+本项目**源代码**以 MIT 许可发布。**二进制发行包**中还包含以下第三方组件，
+详见仓库根目录的 `THIRD_PARTY_NOTICES.md`：
+
+- **scrcpy**（Apache-2.0，https://github.com/Genymobile/scrcpy）：以**未经修改**的
+  官方发布包形式随程序分发，上游 `LICENSE` 文件原样保留在包内 `scrcpy/` 目录，
+  并使用上游 `SHA256SUMS.txt` 做完整性校验。
+- **adb / Android platform-tools**：由 scrcpy 官方发布包自带，本项目未单独下载或修改。
+- **PySide6 / Qt for Python**（LGPL v3，https://www.qt.io/licensing/）：未修改，
+  以动态链接方式使用，用户可自行替换包内的 PySide6/Qt 动态库。
+
+This project's **source code** is MIT-licensed. Its **binary distributions** also
+bundle unmodified third-party components (scrcpy under Apache-2.0, the adb binary
+shipped inside scrcpy's official release, and PySide6 under LGPL v3).
+See `THIRD_PARTY_NOTICES.md` for details.

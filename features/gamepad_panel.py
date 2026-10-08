@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox, QComboBox)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox, QComboBox)
 
 
 class GamepadPanel(QWidget):

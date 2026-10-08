@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QGroupBox,
                              QComboBox, QLabel, QScrollArea)
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 
 
 class ShortcutsPanel(QWidget):

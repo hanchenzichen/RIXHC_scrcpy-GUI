@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit,
                              QComboBox, QCheckBox, QGroupBox, QLabel)
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 
 
 class AudioPanel(QWidget):

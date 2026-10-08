@@ -1,43 +1,75 @@
 import subprocess
 import sys
-from PyQt6.QtCore import QObject, pyqtSignal, QThread
+from PySide6.QtCore import QObject, QThread, Signal
 
 
 # (LogReader 和 ScrcpyWorker 类保持不变)
-class LogReader(QObject):
-    new_log = pyqtSignal(str)
-    finished = pyqtSignal()
-    _is_running = True
+def _first_break(buf: bytearray):
+    """返回缓冲区中第一个换行（\n 或 \r）的位置，没有则返回 None。"""
+    i_n = buf.find(b"\n")
+    i_r = buf.find(b"\r")
+    candidates = [i for i in (i_n, i_r) if i >= 0]
+    return min(candidates) if candidates else None
 
-    def __init__(self, pipe):
+
+class LogReader(QObject):
+    """在子线程里把 scrcpy 的输出按行转发成 Qt 信号。
+
+    设计要点（相对早期版本的修复）：
+      1. 按 4KB 块读取，而不是逐字节 read(1)：后者对每条日志会产生成百上千次
+         系统调用，scrcpy 日志量大时会明显吃 CPU。
+      2. 同时按 \n 和 \r 切分：scrcpy 的进度信息用 \r 结尾，只认 \n 会让
+         这些内容一直堆在缓冲区里、迟迟不显示。
+      3. 固定用 UTF-8 解码并 errors="replace"：不再依赖 sys.stdout.encoding
+         （Windows GBK 控制台下会乱码）。
+    """
+
+    new_log = Signal(str)
+    finished = Signal()
+
+    def __init__(self, pipe, encoding="utf-8"):
         super().__init__()
         self.pipe = pipe
+        self._encoding = encoding
+        self._is_running = True
 
     def run(self):
-        decoder = sys.stdout.encoding or 'utf-8'
-        line_buffer = bytearray()
-        while self._is_running:
-            try:
-                byte = self.pipe.read(1)
-                if not byte:
-                    if line_buffer: self.new_log.emit(line_buffer.decode(decoder, errors='replace'))
+        buffer = bytearray()
+        try:
+            while self._is_running:
+                chunk = self.pipe.read(4096)
+                if not chunk:
                     break
-                line_buffer.append(byte[0])
-                if byte == b'\n':
-                    self.new_log.emit(line_buffer.decode(decoder, errors='replace'))
-                    line_buffer.clear()
-            except (IOError, ValueError):
-                break
-        self.pipe.close()
-        self.finished.emit()
+                buffer.extend(chunk)
+                while True:
+                    pos = _first_break(buffer)
+                    if pos is None:
+                        break
+                    line = bytes(buffer[:pos])
+                    del buffer[:pos + 1]
+                    text = line.decode(self._encoding, errors="replace").strip()
+                    if text:
+                        self.new_log.emit(text)
+        except (IOError, ValueError):
+            pass
+        finally:
+            if buffer:
+                text = bytes(buffer).decode(self._encoding, errors="replace").strip()
+                if text:
+                    self.new_log.emit(text)
+            try:
+                self.pipe.close()
+            except (IOError, ValueError, AttributeError):
+                pass
+            self.finished.emit()
 
     def stop(self):
         self._is_running = False
 
 
 class ScrcpyWorker(QObject):
-    log_signal = pyqtSignal(str)
-    finished_signal = pyqtSignal()
+    log_signal = Signal(str)
+    finished_signal = Signal()
     process = None
     _log_reader_thread = None
     _log_reader = None
@@ -87,11 +119,11 @@ class AdbWorker(QObject):
     """
     【最终清洁版】后台工作类
     """
-    refreshed_signal = pyqtSignal(list, str)
-    command_finished_signal = pyqtSignal(str)
-    packages_listed_signal = pyqtSignal(list)
-    auto_pair_step_signal = pyqtSignal(str)
-    auto_pair_finished_signal = pyqtSignal(str)
+    refreshed_signal = Signal(list, str)
+    command_finished_signal = Signal(str)
+    packages_listed_signal = Signal(list)
+    auto_pair_step_signal = Signal(str)
+    auto_pair_finished_signal = Signal(str)
 
     def _run_adb_command_safe(self, cmd: list, timeout=15):
         try:
@@ -120,6 +152,24 @@ class AdbWorker(QObject):
             self.refreshed_signal.emit(devices, log_msg)
         except Exception as e:
             self.refreshed_signal.emit([], f"获取设备列表失败: {e}")
+
+    def list_apps_via_scrcpy(self):
+        """优先用 `scrcpy --list-apps` 获取可启动应用（一次调用、秒级、自带应用名）。
+
+        旧方案（adb + aapt）在绝大多数正式版 Android 上根本拿不到应用名，
+        还会因为逐条 adb 调用而耗时到分钟级，因此这里把它降级为兜底。
+        """
+        try:
+            from rix.apps import list_apps
+            apps = list_apps()
+            if apps:
+                self.packages_listed_signal.emit(apps)
+                self.command_finished_signal.emit(
+                    f"成功获取 {len(apps)} 个可启动应用（scrcpy --list-apps）。")
+                return
+        except Exception as exc:  # noqa: BLE001 - 任何失败都回退到旧方案
+            self.command_finished_signal.emit(f"scrcpy --list-apps 不可用（{exc}），改用 adb 方案…")
+        self.list_packages_with_names()
 
     def list_packages_with_names(self):
         try:

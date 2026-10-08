@@ -1,0 +1,160 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只构建、不发布（打 tag 时忽略此项）'
+        type: boolean
+        default: true
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  # 内置 scrcpy 核心的版本。升级时改这里即可（值必须与上游 tag 一致）。
+  SCRCPY_VERSION: '5.0.1'
+
+jobs:
+  gui:
+    name: GUI 打包 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: RIX-Scrcpy-windows-x64.zip
+          - os: ubuntu-latest
+            asset: RIX-Scrcpy-linux-x64.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: 版本一致性检查
+        shell: bash
+        run: python tools/check_version.py
+
+      - name: 内置 scrcpy 核心（官方发布包 + SHA256 校验）
+        run: python -m rix.vendor install --version "$SCRCPY_VERSION" --target vendor/scrcpy
+
+      - name: 验证内置核心可运行
+        shell: bash
+        run: |
+          ls -la vendor/scrcpy
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./vendor/scrcpy/scrcpy.exe --version
+          else
+            ./vendor/scrcpy/scrcpy --version
+          fi
+
+      - name: PyInstaller 打包（onedir，含内置 scrcpy 核心）
+        run: pyinstaller RIX-Scrcpy.spec --noconfirm
+
+      - name: 压缩产物 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path dist/RIX-Scrcpy/* -DestinationPath "${{ matrix.asset }}"
+
+      - name: 压缩产物 (Linux)
+        if: runner.os == 'Linux'
+        run: tar -czf "${{ matrix.asset }}" -C dist RIX-Scrcpy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+
+  cli:
+    name: CLI 打包 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: rix-scrcpy-cli-windows-x64.zip
+          - os: ubuntu-latest
+            asset: rix-scrcpy-cli-linux-x64.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: 打包 CLI 单文件（不需要装 Python 就能用）
+        run: pyinstaller rix-scrcpy-cli.spec --noconfirm
+
+      - name: 冒烟测试（真实运行打包出来的 CLI）
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./dist/rix-scrcpy.exe version
+            ./dist/rix-scrcpy.exe options --search codec | head -5
+          else
+            ./dist/rix-scrcpy version
+            ./dist/rix-scrcpy options --search codec | head -5
+          fi
+
+      - name: 压缩产物 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path dist/rix-scrcpy.exe -DestinationPath "${{ matrix.asset }}"
+
+      - name: 压缩产物 (Linux)
+        if: runner.os == 'Linux'
+        run: tar -czf "${{ matrix.asset }}" -C dist rix-scrcpy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    name: 发布 Release
+    needs: [gui, cli]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 校验 tag 与代码里的版本号一致
+        run: python tools/check_version.py --tag "${GITHUB_REF_NAME}"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: 创建 Release 并附上全部产物
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" assets/* \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --notes "安装说明：下载对应平台的压缩包解压即用；程序需要系统里已安装 scrcpy 与 adb（本包不捆绑，避免许可证与体积问题）。Windows 首次运行如遇 SmartScreen 提示，请点『更多信息』→『仍要运行』。"
