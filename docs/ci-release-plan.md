@@ -1,5 +1,29 @@
 # GitHub 平台能力与 CI/发布方案（待确认，尚未实施）
 
+> ## 实施状态（已执行）
+>
+> | 项目 | 状态 |
+> | --- | --- |
+> | LICENSE（MIT）+ 第三方说明 | 已完成 |
+> | requirements.txt / pyproject.toml / 版本单一来源 | 已完成 |
+> | PyQt6 → PySide6 迁移（解决 GPL/MIT 冲突） | 已完成 |
+> | PyInstaller spec（GUI onedir + CLI onefile）纳入版本管理 | 已完成 |
+> | `ci.yml`（Windows+Linux × Python 3.10/3.12：语法检查 + 52 个单测 + GUI 无头自检） | 已完成 |
+> | `build.yml`（打 tag 自动出包 + 创建 Release） | 已完成 |
+> | `upstream-drift.yml`（每周对比上游参数，自动开 Issue） | 已完成 |
+> | 选项注册表生成器 + `rix` 无 GUI 核心 + CLI + TUI | 已完成 |
+> | 工作流安装到 `.github/workflows/` | **待你执行**（见下） |
+>
+> ⚠️ 工作流文件放在 `ci/workflows/`，需要运行 `python tools/install_workflows.py`
+> 复制到 `.github/workflows/` 后再推送——因为当前自动化凭证没有 `workflows` 权限，
+> 直接推送该目录会被 GitHub 拒绝（`refusing to allow ... without workflows permission`）。
+>
+> 用你自己的账号执行：
+> ```bash
+> python tools/install_workflows.py
+> git add .github/workflows && git commit -m "ci: enable workflows" && git push
+> ```
+
 > 本文只是方案说明，**仓库里还没有做任何改动**。你确认后我再执行。
 
 ## 一、仓库现状盘点（2026-10-08 通过 API 核对）
