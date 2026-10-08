@@ -1,0 +1,62 @@
+name: Upstream drift
+
+# 每周一自动对比上游 scrcpy 的参数表；有变化就开一个 Issue 提醒，
+# 免得再出现「落后 32 个参数」这种没人发现的情况。
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    name: 检查上游参数变化
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 对比上游 cli.c
+        id: check
+        continue-on-error: true
+        run: |
+          {
+            echo "对比时间（UTC）：$(date -u '+%Y-%m-%d %H:%M')"
+            echo "上游来源：https://raw.githubusercontent.com/Genymobile/scrcpy/master/app/src/cli.c"
+            echo
+            echo '```'
+            python tools/gen_options.py --check || echo "changed=1" >> "$GITHUB_OUTPUT"
+            echo '```'
+            echo
+            echo "### 怎么处理"
+            echo "1. 本地运行 \`python tools/gen_options.py\` 重新生成 \`rix/data/options.generated.json\`"
+            echo "2. 为新参数补充分组/互斥等语义（\`rix/data/options.meta.json\`）"
+            echo "3. 提交后 CI 会自动跑测试；GUI/CLI 无需逐个改面板"
+          } > drift.md
+          cat drift.md
+
+      - name: 已有未关闭的同类 Issue 就跳过
+        id: existing
+        if: steps.check.outputs.changed == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh issue list --state open --search "上游 scrcpy 参数有变化 in:title" --json number --jq 'length')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: 创建 Issue
+        if: steps.check.outputs.changed == '1' && steps.existing.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create upstream-drift --color FBCA04 --description "上游 scrcpy 参数发生变化" --force
+          gh issue create \
+            --title "上游 scrcpy 参数有变化（$(date -u '+%Y-%m-%d')）" \
+            --label upstream-drift \
+            --body-file drift.md

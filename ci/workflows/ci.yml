@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'cline/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: 测试 (${{ matrix.os }} / Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 语法检查
+        run: python -m compileall -q rix core features tools main.py
+
+      - name: 单元测试
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: GUI 无头自检
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python tools/smoke_gui.py
+
+  drift:
+    name: 上游参数一致性
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 与上游 scrcpy 的 cli.c 对比
+        run: python tools/gen_options.py --check
