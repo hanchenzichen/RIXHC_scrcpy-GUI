@@ -127,27 +127,45 @@ def supports(version: str | None, minimum: str) -> bool:
     return current + (0,) * (length - len(current)) >= required + (0,) * (length - len(required))
 
 
-def adb_devices(adb_path: str | None = None) -> list[dict]:
-    """解析 `adb devices -l`，返回 [{serial, state, model}]。
+# adb devices 输出里合法的状态值。显式白名单可以避免把守护进程的
+# 「* daemon not running; starting now at tcp:5037」之类信息误当成设备。
+ADB_STATES = {
+    "device", "offline", "unauthorized", "authorizing", "connecting",
+    "bootloader", "recovery", "sideload", "rescue", "host", "fastboot",
+}
 
-    注意：这里保留了 unauthorized / offline 设备（旧版 GUI 把它们过滤掉了，
-    导致用户看到「未找到设备」却不知道手机正在等授权）。
+
+def parse_adb_devices(text: str) -> list[dict]:
+    """解析 `adb devices -l` 的输出。
+
+    与早期实现的关键差异：**保留 unauthorized / offline 设备**。
+    旧版只保留状态为 device 的行，导致用户在手机上还没点「允许 USB 调试」时，
+    界面显示「未找到设备」，完全看不出原因。
     """
-    binary = adb_path or find_binary("adb")
-    if not binary:
-        return []
-    output = run_capture([binary, "devices", "-l"])
     devices: list[dict] = []
-    for line in output.splitlines()[1:]:
-        line = line.strip()
-        if not line or "\t" not in line and " " not in line:
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("*") or line.lower().startswith("list of devices"):
             continue
         parts = line.split()
         if len(parts) < 2:
             continue
-        info = {"serial": parts[0], "state": parts[1], "model": ""}
+        serial, state = parts[0], parts[1]
+        if state == "no" and len(parts) > 2 and parts[2] == "permissions":
+            state = "no permissions"
+        elif state not in ADB_STATES:
+            continue
+        info = {"serial": serial, "state": state, "model": ""}
         for token in parts[2:]:
             if token.startswith("model:"):
                 info["model"] = token.split(":", 1)[1]
         devices.append(info)
     return devices
+
+
+def adb_devices(adb_path: str | None = None) -> list[dict]:
+    """执行 `adb devices -l` 并解析结果。"""
+    binary = adb_path or find_binary("adb")
+    if not binary:
+        return []
+    return parse_adb_devices(run_capture([binary, "devices", "-l"]))

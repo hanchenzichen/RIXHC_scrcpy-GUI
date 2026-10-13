@@ -199,6 +199,16 @@ def cmd_apps(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    """启动本地 agent（HTTP JSON API + 内置 Web 控制台）。"""
+    from rix.agent import DEFAULT_HOST, DEFAULT_PORT, serve
+
+    return serve(
+        host=args.host, port=args.port, token=args.token,
+        binary=args.binary, open_browser=args.open,
+    )
+
+
 def cmd_vendor(args) -> int:
     """管理内置 scrcpy 核心（下载官方发布包并校验 SHA256）。"""
     if args.action == "status":
@@ -310,6 +320,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.add_argument("--binary", help="scrcpy 可执行文件路径")
     p.set_defaults(func=cmd_apps)
+
+    p = sub.add_parser("serve", help="启动本地 agent 与 Web 控制台")
+    p.add_argument("--host", default="127.0.0.1", help="监听地址（默认仅本机）")
+    p.add_argument("--port", type=int, default=8765, help="监听端口")
+    p.add_argument("--token", help="访问令牌（局域网访问时建议设置）")
+    p.add_argument("--open", action="store_true", help="启动后打开浏览器")
+    p.add_argument("--binary", help="scrcpy 可执行文件路径")
+    p.set_defaults(func=cmd_serve)
 
     p = sub.add_parser("vendor", help="管理内置 scrcpy 核心")
     p.add_argument("action", choices=["status", "install", "path"])
