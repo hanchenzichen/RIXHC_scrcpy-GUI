@@ -92,7 +92,7 @@
     `command_runner.py:114` 的 `retries` 参数从未使用；
     解码用 `sys.stdout.encoding`（Windows GBK 控制台下会乱码，建议固定 utf-8）。
 15. **README 说「所有参数都已 UI 化」，实际还有缺口**（对照 scrcpy 3.x 文档，
-    **建议按你实际使用的版本再核一遍**）：`--kill-adb-on-close`、`--port`、
+    **建议按实际使用的版本再核对一遍**）：`--kill-adb-on-close`、`--port`、
     `--tcpip`（目前是手工 `adb tcpip` + `adb connect` 代替）、
     `--video-codec-options`、`--no-downsize-on-error`、`--keep-active`、
     `--forward-all-clicks`、`--clipboard-autosync`、`--camera-high-speed`、
@@ -101,11 +101,11 @@
     用户装的 scrcpy 版本一变，这个「独立 Server 模式」就会因协议不匹配而失败，
     建议从 `scrcpy --version` 推断或让用户显式选择。
 
-## 五、我会优先做的三件事
+## 五、优先事项建议
 
 1. **修 P0 的线程/进程收尾**（1、3）：这是唯一的崩溃/残留进程来源，改动量小。
 2. **加「命令预览 + 复制」**：在启动按钮旁显示将要执行的完整命令行。
-   成本极低，但对用户信任、以及你自己排错帮助巨大 —— 现在所有参数错误
+   成本极低，对用户信任与排错帮助显著 —— 现在所有参数错误
    都只能靠用户贴日志。
 3. **加「scrcpy 可执行文件路径 / 版本」设置项 + 配置预设（保存/加载）**。
     很多用户用的是 scrcpy-win64 解压版、没进 PATH；预设则能解决

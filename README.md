@@ -38,7 +38,7 @@ GUI, TUI and CLI front-ends sharing one headless core.
 
 1. **Python 3.10+**
 2. **scrcpy** 与 **adb**：**通常不需要自己安装**——发布包已内置官方 scrcpy 核心（含 adb）。
-   如果你已有自己的版本，查找优先级为：
+   若已自行安装 scrcpy，查找优先级为：
    `RIX_SCRCPY` 环境变量 → 内置核心 → 用户目录（`vendor install`）→ 系统 PATH。
 3. Python 依赖：
 
@@ -121,7 +121,7 @@ tools/
   check_version.py       版本一致性校验（CI 用）
   smoke_gui.py           GUI 无头自检（CI 用）
 tests/                   74 个单元测试（含 GUI 面板结构检查，无需 Qt）
-docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）、协作约定（agent-brief.md）
+docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）、协作约定（automation-policy.md）
 RIX-Scrcpy.spec          GUI 打包配置（onedir）
 rix-scrcpy-cli.spec      CLI 打包配置（onefile）
 ci/workflows/            GitHub Actions 工作流定义（用 install_workflows.py 安装）
@@ -149,7 +149,7 @@ python tools/check_version.py              # 版本一致性
 > ```
 >
 > 之所以不直接放在 `.github/workflows/`：某些自动化凭证没有 `workflows` 权限，
-> 推送该目录会被 GitHub 拒绝。用你自己的账号（或已授权的 token）推送即可。
+> 推送该目录需要具备 `workflows` 权限的凭证。
 
 ### 内置核心是怎么来的
 

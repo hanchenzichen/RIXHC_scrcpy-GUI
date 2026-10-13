@@ -8,11 +8,11 @@
 | 项目 | 结论 |
 | --- | --- |
 | 上游最新版本 | **5.0.1**（前一个 5.0，再往前 4.1 / 4.0 / 3.3.4） |
-| 你的 GUI 面向的版本 | 至少需要 **≥ 3.2**（用了 `--display-ime-policy`），注释与 3.2/3.3 文档一致 |
+| 本项目面向的版本 | 至少需要 **≥ 3.2**（用了 `--display-ime-policy`），注释与 3.2/3.3 文档一致 |
 | 长参数总数（上游） | 5.0.1 共 **109** 个 |
-| 你的 GUI 用到的长参数 | **78** 个 |
+| 本项目已使用的长参数 | **78** 个 |
 | 其中在 5.0.1 已失效 | **1** 个：`--server-debugger`（从未存在过，勾选即启动失败） |
-| 5.0.1 有、你没有 | **32** 个 |
+| 5.0.1 有、本项目尚未覆盖 | **32** 个 |
 | 枚举值过期的下拉框 | 2 处（`--video-codec`、`--record-format`） |
 | doc 目录结构 | 有变化：`virtual_display.md` → `virtual-display.md`（v4.0 起），另新增若干文档 |
 
@@ -35,9 +35,9 @@ v4.0 参数数反而变少（106），因为 4.0 做了一轮清理，删掉了�
   macos mouse otg recording shortcuts tunnels v4l2 verify-release video
   virtual-display window windows`。
 
-你代码注释里引用的 `camera.md / audio.md / video.md / control.md / device.md /
+代码注释中引用的 `camera.md / audio.md / video.md / control.md / device.md /
 recording.md / window.md / gamepad.md / mouse.md / keyboard.md` **全部仍然存在**，
-只是内容都更新过；唯一改过名字的是虚拟显示文档（你没按文件名引用它）。
+只是内容都更新过；唯一改过名字的是虚拟显示文档（代码未按文件名引用该文档）。
 
 ## 三、参数级差异
 
@@ -54,18 +54,18 @@ recording.md / window.md / gamepad.md / mouse.md / keyboard.md` **全部仍然�
 `unrecognized option '--server-debugger'` 退出，整个会话起不来。
 **建议：移除该控件，或改成说明「需自行用 meson 编译带调试器的 server」。**
 
-### 3.2 上游有、你没有的 32 个参数
+### 3.2 上游有、本项目尚未覆盖的 32 个参数
 
 **长期就存在（≥2.7），属于纯粹遗漏：**
 
 | 参数 | 说明 / 建议归属 |
 | --- | --- |
-| `--list-apps` | ★ 见 3.4，可彻底替代你现在的 `aapt` 方案 |
-| `--kill-adb-on-close` | 关闭 scrcpy 时结束 adb server；可与你已有的「关闭 ADB 服务」按钮整合 |
-| `--tcpip[=IP]` | 一步完成「开 TCP/IP + 连接」；你现在是手工 `adb tcpip` + `adb connect` |
+| `--list-apps` | ★ 见 3.4，可彻底替代当前基于 `aapt` 的方案 |
+| `--kill-adb-on-close` | 关闭 scrcpy 时结束 adb server；可与现有的「关闭 ADB 服务」按钮整合 |
+| `--tcpip[=IP]` | 一步完成「开启 TCP/IP + 连接」；当前为手工 `adb tcpip` + `adb connect` |
 | `--select-usb` / `--select-tcpip` | 就是 `-d` / `-e` 的长名，补上更清晰 |
 | `--port` | 配合已有的 `--tunnel-port` 使用 |
-| `--video-codec-options` | 对应你已实现的 `--audio-codec-options` |
+| `--video-codec-options` | 对应已实现的 `--audio-codec-options` |
 | `--render-driver` | 软件渲染兼容（老显卡 / 虚拟机） |
 | `--verbosity` | 日志级别，排错时很有用 |
 | `--pause-on-exit[=always\|if-error]` | Windows 双击 bat 场景 |
@@ -102,7 +102,7 @@ recording.md / window.md / gamepad.md / mouse.md / keyboard.md` **全部仍然�
 
 ### 3.3 枚举值过期（参数没错，是下拉框少选项）
 
-| 控件 | 你的取值 | 5.0.1 实际支持 |
+| 控件 | 当前取值 | 5.0.1 实际支持 |
 | --- | --- | --- |
 | `--video-codec`（`video_panel.py:37`） | h264 / h265 / av1 | h264 / h265 / av1 / **vp8 / vp9** |
 | `--record-format`（`recording_panel.py:34`） | 自动 / mkv / mp4 / opus / flac / wav | mp4 / mkv / **m4a** / **mka** / opus / **aac** / flac / wav |
@@ -112,11 +112,11 @@ recording.md / window.md / gamepad.md / mouse.md / keyboard.md` **全部仍然�
 - `--keyboard`：sdk / uhid / aoa / disabled ✅
 - `--mouse`：sdk / uhid / aoa / disabled ✅
 - `--gamepad`：disabled / uhid / aoa ✅
-- `--audio-source`：你列的 11 个（output…voice-performance）与 `doc/audio.md` 一字不差 ✅
+- `--audio-source`：已列出的 11 个（output…voice-performance）与 `doc/audio.md` 一字不差 ✅
 - `--audio-codec`：opus / aac / flac / raw ✅
 - `--shortcut-mod`：lctrl / rctrl / lalt / ralt / lsuper / rsuper ✅
 - `--mouse-bind` 绑定字符：`+` `-` `b` `h` `s` `n`（`n` 仍是「展开通知面板」）✅
-- `--camera-facing`：front / back / external；与 `--camera-id` 互斥（你的实现已正确处理）✅
+- `--camera-facing`：front / back / external；与 `--camera-id` 互斥（实现已正确处理）✅
 - `--new-display` 语法：`1920x1080`、`1920x1080/420`、`=/240` 均未变 ✅
 - `--start-app` 的 `+`（先强停）/ `?`（按名称搜索）前缀未变 ✅
 - `--no-window` 仍有效（含义：不建窗口，隐含 `--no-video-playback`）✅
@@ -126,7 +126,7 @@ recording.md / window.md / gamepad.md / mouse.md / keyboard.md` **全部仍然�
 
 - `--orientation` 在 5.0.1 仍然接受，但帮助文本已写明
   *"Same as `--display-orientation=value`"* —— 它现在只是旧别名。
-  你的「客户端渲染方向」语义没错，但**无法设置采集方向**
+  「客户端渲染方向」的语义正确，但**无法设置采集方向**
   （`--capture-orientation`，这个才会影响录制内容）。
 
 ### 3.4 ★ 用 `--list-apps` 替掉现在的 `aapt` 方案
@@ -143,7 +143,7 @@ List of apps:
 （实现见 `server/.../device/Device.java:listApps()` 与 `util/LogUtils.java:buildAppListMessage()`，
 名称按 30 列对齐。）
 
-对比你现在的实现（`core/command_runner.py:124-148`）：
+对比当前实现（`core/command_runner.py:124-148`）：
 
 | | 现在（aapt） | 改成 `--list-apps` |
 | --- | --- | --- |
@@ -155,13 +155,13 @@ List of apps:
 注意：`--list-apps` 是一次性模式（列出后即退出，不镜像），输出在 stdout/stderr，
 解析上面那种 `- 名称  包名` 的行即可。
 
-## 四、你的 GUI 的版本下限
+## 四、本项目的版本下限
 
 按「参数最早出现的版本」反推：78 个参数中 70 个 ≤ v2.7 就有，另有 8 个来自 3.x
 （`--new-display` / `--no-vd-system-decorations` / `--start-app` / `--video-buffer` /
 `--screen-off-timeout` 属 3.0，`--no-vd-destroy-content` 属 3.1，`--display-ime-policy` 属 3.2）。
 
-**结论：你的 GUI 至少需要 scrcpy ≥ 3.2，代码面向的是 3.2/3.3 那一版文档。**
+**结论：本项目至少需要 scrcpy ≥ 3.2，代码面向的是 3.2/3.3 版本的文档。**
 从 3.2 到 5.0.1 中间隔了 3.3、4.0、4.1、5.0 四个版本周期，
 上面 32 个缺失参数里有一半是这期间新增的。
 

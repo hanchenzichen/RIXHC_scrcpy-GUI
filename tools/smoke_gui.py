@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """GUI 无头自检（CI 用）。
 
-没有手机、没有显示器也能跑：Qt 的 offscreen 平台插件让我们可以在 CI 里
+没有设备、没有显示器也能运行：Qt 的 offscreen 平台插件使得可以在 CI 中
 真正实例化整个主窗口，从而抓到「导入即崩溃」「控件初始化异常」这类问题
 （这类问题光靠语法检查是抓不到的）。
 
@@ -35,7 +35,7 @@ def main() -> int:
             print("跳过：PySide6 已安装但缺少系统图形库（libGL/X11 等）。")
             print("  Linux 上可执行：sudo apt install libgl1 libegl1 libx11-6 libxkbcommon0 "
                   "libglib2.0-0 libfreetype6 libfontconfig1 libdbus-1-3")
-            print("  或者直接在你的桌面系统上运行本脚本。")
+            print("  或直接在桌面系统上运行本脚本。")
         else:
             print(f"跳过：未安装 PySide6（{message}）")
         return 0

@@ -138,7 +138,7 @@ class DeveloperPanel(QWidget):
                 self.log_emitter("\n独立 Server 已在后台启动！")
                 self.log_emitter("您现在可以使用VLC等播放器打开以下网络串流地址:")
                 self.log_emitter("tcp://localhost:27185")
-                self.log_emitter("注意：请手动通过 ADB 或我们的 GUI 关闭 ADB 服务来停止 Server。")
+                self.log_emitter("注意：请手动通过 ADB 或本程序 关闭 ADB 服务来停止 Server。")
 
             except Exception as e:
                 self.log_emitter(f"启动独立 Server 失败: {e}")

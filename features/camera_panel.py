@@ -72,7 +72,7 @@ class CameraPanel(QWidget):
         """运行列出摄像头信息的命令，并将结果打印到日志"""
         if self.log_emitter:
             self.log_emitter(f"\n正在执行 scrcpy {command} ...")
-            # 注意：这里我们简化处理，直接运行一个阻塞命令
+            # 注意：此处简化处理，直接运行一个阻塞命令
             # 因为这个操作很快，且不需要复杂的线程管理
             try:
                 # 构建一个基础的 scrcpy 命令
