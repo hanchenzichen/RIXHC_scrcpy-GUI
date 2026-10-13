@@ -18,11 +18,10 @@ import traceback
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# 左侧 device_panel 是常驻面板（不是页签），其余通过 window.panel(名字) 取得
 PANELS = (
-    "device_panel", "audio_panel", "video_panel", "camera_panel", "keyboard_panel",
-    "mouse_panel", "gamepad_panel", "recording_panel", "control_panel", "window_panel",
-    "shortcuts_panel", "virtual_display_panel", "v4l2_panel", "developer_panel",
-    "registry_panel",
+    "audio", "video", "camera", "recording", "control", "keyboard", "mouse",
+    "gamepad", "window", "shortcuts", "virtual_display", "v4l2", "developer", "registry",
 )
 
 
@@ -60,11 +59,23 @@ def main() -> int:
         traceback.print_exc()
         return 1
 
+    # 2.5 面板懒加载：刚构造完时不应把所有面板都建出来（启动性能的关键）
+    total_tabs = len(getattr(window, "_tab_names", []))
+    built_before = len(getattr(window, "_panels", {}))
+    if total_tabs and built_before >= total_tabs:
+        failures.append(
+            f"面板懒加载失效：构造后已构建 {built_before}/{total_tabs} 个面板")
+
     # 3. 每个面板的 get_args() 都要能返回列表（不能抛异常）
+    #    懒加载下先显式构建全部面板
+    window.ensure_all_panels()
+    app.processEvents()
+    if total_tabs and len(window._panels) != total_tabs:
+        failures.append(f"ensure_all_panels() 后只构建了 {len(window._panels)}/{total_tabs} 个面板")
     #    例外：device_panel 在「没选设备」时会返回 None 表示选择不合法，
     #    主窗口据此中止启动并给出提示，这是既定契约。
     for name in PANELS:
-        panel = getattr(window, name, None)
+        panel = getattr(window, name, None) if name == "device_panel" else window.panel(name)
         if panel is None:
             failures.append(f"面板缺失: {name}")
             continue
@@ -90,7 +101,7 @@ def main() -> int:
         failures.append(f"format_command 抛异常: {exc!r}")
 
     # 4.5 注册表面板必须覆盖全部参数，且不能出现幽灵参数
-    registry_panel = getattr(window, "registry_panel", None)
+    registry_panel = window.panel("registry")
     if registry_panel is not None and registry_panel.registry is not None:
         total = registry_panel.registry.option_count
         rendered = len(registry_panel._editors)
@@ -108,7 +119,7 @@ def main() -> int:
         for item in failures:
             print(f"  - {item}")
         return 1
-    print(f"GUI 无头自检通过（{len(PANELS)} 个面板）。")
+    print(f"GUI 无头自检通过（{len(PANELS)} 个页签面板 + 常驻设备面板）。")
     return 0
 
 

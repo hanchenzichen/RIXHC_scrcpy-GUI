@@ -21,10 +21,10 @@
 
 ## 二、性能与内存
 
-- [ ] **GUI 按需构建**：现在启动时会一次性构造 15 个面板（每个面板都建控件）。
-      改成 `QTabWidget` 懒加载（切到哪个页签才建），预计启动时间和内存都能降一截。
-- [ ] **日志面板限流**：日志无上限追加会持续吃内存。改成环形缓冲（如最多 5000 行）
-      + 提供「导出日志到文件」。
+- [x] **GUI 面板懒加载**：切换到页签时才构建面板（`main.py` 的 `_ensure_panel`）；
+      无头自检中加入了「构造后不得建出全部面板」的回归检查。
+- [x] **日志环形缓冲**：日志面板改用 `QPlainTextEdit` 并设置 `setMaximumBlockCount(5000)`。
+- [ ] 日志导出到文件。
 - [ ] **会话列表虚拟化**：多开会话很多时，用 `QListView` + model 替代逐个 widget。
 - [ ] **`scrcpy --version` 结果缓存**：避免每次刷新都起进程。
 - [ ] **可选：TUI 用 Textual**：现在 TUI 是纯标准库实现（省内存但观感朴素）。
@@ -48,9 +48,8 @@
 - [ ] **首启动向导**：检测不到 scrcpy 时，引导「一键下载内置核心」或「指定路径」。
 - [ ] **GUI 接入预设**：`rix.profiles` 已可用，GUI 只需加一个下拉框与保存按钮。
 - [ ] **GUI 显示版本与体检结果**：把 `doctor` 的输出做成一屏「环境」页。
-- [ ] **设备状态可视化**：`adb devices -l` 的 `unauthorized`/`offline` 状态
-      已经在 `rix.scrcpy_bin.adb_devices()` 里解析好了，GUI 还没用上——
-      显示出来可以省掉大量「为什么连不上」的困惑。
+- [x] **设备状态可视化**：CLI、agent 与 GUI 日志均会显示 `unauthorized` / `offline` 状态，
+      并给出「请在手机上允许 USB 调试」等提示。
 - [ ] **虚拟显示面板与注册表合并**：`--new-display` / `--flex-display` /
       `--display-ime-policy` 在「全部参数」页签里也能设置，存在重复入口。
 - [ ] **快捷键冲突提示**：`--shortcut-mod` 与系统快捷键冲突时给出提醒。
@@ -58,10 +57,11 @@
 
 ## 五、工程与分发
 
-- [ ] **本地 agent（下一步重点）**：`rix-scrcpy serve` 起一个 127.0.0.1 的
-      JSON-RPC/WebSocket 服务，暴露会话列表、启动/停止、日志流、设备与参数查询。
-      这一步做完，Android 客户端、Web 控制台、远程控制就都是「薄壳」。
-- [ ] **Android 客户端**：先做远程前端（连 PC 上的 agent，1–2 周量级）；
+- [x] **本地 agent**：`rix-scrcpy serve` 提供 HTTP JSON 接口（会话、设备、参数、预设、
+      日志增量拉取），并内置 Web 控制台，手机浏览器即可使用；默认仅监听 `127.0.0.1`，
+      支持 `--token` 限制访问。
+- [x] **移动端可用入口**：由 agent 提供 Web 控制台，手机浏览器即可查看设备、启停会话与查看输出。
+- [ ] **原生 Android 客户端**：远程前端（连 PC 上的 agent）；
       原生客户端（Kotlin + MediaCodec + ADB 协议库）属于独立项目。
 - [ ] **Linux AppImage**：比 tar.gz 更友好。
 - [ ] **PyPI 发布**：`pip install rix-scrcpy` 即可用 CLI/TUI。

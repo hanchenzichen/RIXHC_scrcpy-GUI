@@ -21,7 +21,10 @@ GUI, TUI and CLI front-ends sharing one headless core.
 - **⚡ 秒级应用列表**：用 `scrcpy --list-apps` 取可启动应用（旧方案依赖设备上的 aapt，多数手机根本没有）。
 - **🔍 命令预览**：启动前可查看并复制完整命令行，排错不用再猜。
 - **💾 配置预设**：把常用组合存成 profile，一键复用。
-- **🧭 三种前端**：Windows/Linux 桌面 GUI、跨平台 TUI、可脚本化的 CLI。
+- **🧭 四种前端**：Windows/Linux 桌面 GUI、跨平台 TUI、可脚本化的 CLI，
+  以及由 `rix-scrcpy serve` 提供的 Web 控制台（手机浏览器即可用）。
+- **🔌 本地 agent**：HTTP JSON 接口暴露会话、设备、参数与预设，
+  便于脚本、移动端或第三方前端接入。
 - **🩺 自带体检**：`rix-scrcpy doctor` 会检查 scrcpy/adb 是否就绪、版本是否够新、参数是否健康。
 
 ## 🖥️ 三种前端
@@ -31,6 +34,7 @@ GUI, TUI and CLI front-ends sharing one headless core.
 | GUI | `python main.py` 或打包好的 `RIX-Scrcpy` | 日常可视化配置 |
 | CLI | `rix-scrcpy run --set ...` | 脚本、批处理、CI、远程 SSH |
 | TUI | `rix-scrcpy-tui` 或 `python -m rix.tui` | 没有桌面环境、想省内存 |
+| Web 控制台 | `rix-scrcpy serve`，浏览器打开提示的地址 | 手机/平板控制电脑上的 scrcpy |
 
 ## 🛠️ 安装与运行
 
@@ -65,6 +69,9 @@ rix-scrcpy run --set max-fps=60 --set no-audio --print
 rix-scrcpy profiles save gaming --set max-fps=60 --set no-audio
 rix-scrcpy run --profile gaming
 rix-scrcpy run --set no-audio --extra-args "--some-future-flag"
+rix-scrcpy apps                          # 列出设备上可启动的应用
+rix-scrcpy serve                         # 启动本地 agent 与 Web 控制台
+rix-scrcpy serve --host 0.0.0.0 --token <令牌>   # 供手机浏览器访问
 ```
 
 ### TUI
@@ -114,13 +121,18 @@ rix/                     无 GUI 依赖的核心
   profiles.py            配置预设
   scrcpy_bin.py          定位 scrcpy/adb、读版本
   cli.py                 CLI（rix-scrcpy）
+  agent.py               本地 agent（HTTP JSON 接口 + Web 控制台）
+  sessions.py            无 GUI 依赖的会话管理（CLI / TUI / agent 共用）
+  apps.py                通过 scrcpy --list-apps 获取可启动应用
+  vendor.py              内置 scrcpy 核心的下载、校验与定位
   tui/                   TUI（纯标准库）
   data/                  自动生成的注册表 + 手工语义层
 tools/
   gen_options.py         从上游 cli.c 生成注册表
   check_version.py       版本一致性校验（CI 用）
   smoke_gui.py           GUI 无头自检（CI 用）
-tests/                   74 个单元测试（含 GUI 面板结构检查，无需 Qt）
+tests/                   98 个单元测试（含 GUI 面板结构检查，无需 Qt）
+CHANGELOG.md             版本更新记录
 docs/                    评审记录、架构方案、CI 方案、优化路线（roadmap.md）、协作约定（automation-policy.md）
 RIX-Scrcpy.spec          GUI 打包配置（onedir）
 rix-scrcpy-cli.spec      CLI 打包配置（onefile）
@@ -165,7 +177,7 @@ python -m rix.vendor install --version 5.0.1 --target vendor/scrcpy
 
 | 工作流 | 触发 | 作用 |
 | --- | --- | --- |
-| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、74 个单元测试、GUI 无头自检；另有「内置核心端到端」作业真实下载官方 scrcpy 并执行 |
+| `ci.yml` | push / PR | Windows + Linux × Python 3.10/3.12 跑语法检查、98 个单元测试、GUI 无头自检；另有「内置核心端到端」作业真实下载官方 scrcpy 并执行 |
 | `build.yml` | 打 `v*` tag 或手动 | 打包 Windows/Linux 的 GUI（onedir）与 CLI（onefile），打 tag 时自动创建 Release |
 | `upstream-drift.yml` | 每周一 / 手动 | 对比上游 scrcpy 参数，有变化自动开 Issue |
 

@@ -7,6 +7,6 @@
       scrcpy 的 cli.c 生成），保证「覆盖全部功能」是构造上的结果。
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = ["__version__"]

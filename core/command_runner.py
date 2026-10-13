@@ -144,12 +144,41 @@ class AdbWorker(QObject):
             raise Exception(f"执行 '{' '.join(cmd)}' 时出错: {e}")
 
     def refresh_devices(self, retries=0):
+        """刷新设备列表。
+
+        与早期实现的差异：保留 unauthorized / offline 设备并把状态写进日志。
+        旧实现只保留状态为 device 的行，用户在手机上尚未点「允许 USB 调试」时
+        只会看到「未找到已连接的设备」，完全看不出原因。
+        """
         try:
-            output = self._run_adb_command_safe(['adb', 'devices'])
-            lines = output.strip().split('\n')
-            devices = [line.split('\t')[0] for line in lines[1:] if '\tdevice' in line]
-            log_msg = f"找到设备: {', '.join(devices)}" if devices else "未找到已连接的设备。"
-            self.refreshed_signal.emit(devices, log_msg)
+            output = self._run_adb_command_safe(['adb', 'devices', '-l'])
+            try:
+                from rix.scrcpy_bin import parse_adb_devices
+                entries = parse_adb_devices(output)
+            except ImportError:
+                entries = [
+                    {'serial': line.split('\t')[0], 'state': 'device'}
+                    for line in output.strip().split('\n')[1:] if '\tdevice' in line
+                ]
+
+            devices = [item['serial'] for item in entries]
+            if not devices:
+                self.refreshed_signal.emit([], "未找到已连接的设备。")
+                return
+
+            summary = ', '.join(f"{item['serial']}({item['state']})" for item in entries)
+            self.refreshed_signal.emit(devices, f"找到设备: {summary}")
+
+            unauthorized = [item['serial'] for item in entries if item['state'] == 'unauthorized']
+            if unauthorized:
+                self.command_finished_signal.emit(
+                    "提示：以下设备尚未授权，请在手机屏幕上点击「允许 USB 调试」："
+                    + ', '.join(unauthorized))
+            offline = [item['serial'] for item in entries if item['state'] == 'offline']
+            if offline:
+                self.command_finished_signal.emit(
+                    "提示：以下设备处于离线状态，可尝试重新插拔数据线或重启 adb 服务："
+                    + ', '.join(offline))
         except Exception as e:
             self.refreshed_signal.emit([], f"获取设备列表失败: {e}")
 

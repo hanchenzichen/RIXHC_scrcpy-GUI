@@ -59,6 +59,36 @@ except ImportError:  # 兼容只拷贝了 main.py 与 features/ 的极简运行�
         return [rendered[key] for key in order]
 
 
+# 日志面板保留的最大行数（环形缓冲）
+LOG_MAX_LINES = 5000
+
+
+PANEL_SPECS = (
+    # (内部名, 页签标题, 构造工厂)
+    ("audio", "音频", AudioPanel),
+    ("video", "视频", VideoPanel),
+    ("camera", "摄像头", CameraPanel),
+    ("recording", "录制", RecordingPanel),
+    ("control", "控制", ControlPanel),
+    ("keyboard", "键盘", KeyboardPanel),
+    ("mouse", "鼠标", MousePanel),
+    ("gamepad", "游戏手柄", GamepadPanel),
+    ("window", "窗口", WindowPanel),
+    ("shortcuts", "快捷键", ShortcutsPanel),
+    ("virtual_display", "虚拟显示", VirtualDisplayPanel),
+    ("v4l2", "V4L2", V4l2Panel),
+    ("developer", "开发者", DeveloperPanel),
+    ("registry", "全部参数", RegistryPanel),
+)
+
+# 面板按此顺序拼装命令行，保证结果稳定可复现
+PANEL_ARG_ORDER = (
+    "video", "virtual_display", "audio", "recording", "control",
+    "window", "shortcuts", "v4l2", "developer", "gamepad", "keyboard", "mouse",
+    "registry",
+)
+
+
 class ScrcpyMainMenu(QMainWindow):
     """
     Scrcpy 控制中心主窗口 (UI 优化最终版)。
@@ -71,6 +101,11 @@ class ScrcpyMainMenu(QMainWindow):
         self.setWindowIcon(QIcon(resource_path('RIXHC.ico')))
 
         self.session_manager = SessionManager()
+        # 面板按需构建：启动时只建第一个页签，切到哪个才建哪个
+        self._panels = {}
+        self._tab_names = []
+        self._panel_factories = {}
+        self._tab_layouts = {}
         self.initUI()
         self.connect_manager_signals()
         self.device_panel.refresh_devices()
@@ -138,47 +173,60 @@ class ScrcpyMainMenu(QMainWindow):
 
     def _create_tabs_panel(self):
         tabs = QTabWidget()
-        self.audio_panel = AudioPanel()
-        self.video_panel = VideoPanel()
-        self.camera_panel = CameraPanel()
-        self.camera_panel.set_log_emitter(self.log)
-        self.keyboard_panel = KeyboardPanel()
-        self.mouse_panel = MousePanel()
-        self.gamepad_panel = GamepadPanel()
-        self.recording_panel = RecordingPanel()
-        self.control_panel = ControlPanel()
-        self.window_panel = WindowPanel()
-        self.shortcuts_panel = ShortcutsPanel()
-        self.virtual_display_panel = VirtualDisplayPanel()
-        self.virtual_display_panel.set_log_emitter(self.log)
-        self.v4l2_panel = V4l2Panel()
-        self.v4l2_panel.set_log_emitter(self.log)
-        self.developer_panel = DeveloperPanel()
-        self.developer_panel.set_log_emitter(self.log)
-        self.registry_panel = RegistryPanel()
-        self.registry_panel.set_log_emitter(self.log)
-
-        tabs.addTab(self.audio_panel, "音频")
-        tabs.addTab(self.video_panel, "视频")
-        tabs.addTab(self.camera_panel, "摄像头")
-        tabs.addTab(self.recording_panel, "录制")
-        tabs.addTab(self.control_panel, "控制")
-        tabs.addTab(self.keyboard_panel, "键盘")
-        tabs.addTab(self.mouse_panel, "鼠标")
-        tabs.addTab(self.gamepad_panel, "游戏手柄")
-        tabs.addTab(self.window_panel, "窗口")
-        tabs.addTab(self.shortcuts_panel, "快捷键")
-        tabs.addTab(self.virtual_display_panel, "虚拟显示")
-        tabs.addTab(self.v4l2_panel, "V4L2")
-        tabs.addTab(self.developer_panel, "开发者")
-        tabs.addTab(self.registry_panel, "全部参数")
+        for name, title, factory in PANEL_SPECS:
+            container = QWidget()
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(0, 0, 0, 0)
+            tabs.addTab(container, title)
+            self._tab_names.append(name)
+            self._panel_factories[name] = factory
+            self._tab_layouts[name] = layout
+        tabs.currentChanged.connect(self._on_tab_changed)
 
         if not sys.platform.startswith('linux'):
-            v4l2_index = tabs.indexOf(self.v4l2_panel)
+            v4l2_index = self._tab_names.index('v4l2')
             tabs.setTabEnabled(v4l2_index, False)
             tabs.setTabToolTip(v4l2_index, "此功能仅在 Linux 操作系统上可用")
 
+        self._ensure_panel(0)
         return tabs
+
+    def _on_tab_changed(self, index: int):
+        self._ensure_panel(index)
+
+    def _ensure_panel(self, index: int):
+        """首次显示某个页签时才构建对应面板，降低启动时间与常驻内存。"""
+        if index < 0 or index >= len(self._tab_names):
+            return None
+        name = self._tab_names[index]
+        if name in self._panels:
+            return self._panels[name]
+        panel = self._panel_factories[name]()
+        if hasattr(panel, 'set_log_emitter'):
+            panel.set_log_emitter(self.log)
+        self._tab_layouts[name].addWidget(panel)
+        self._panels[name] = panel
+        self._apply_panel_state(name, panel)
+        return panel
+
+    def panel(self, name: str):
+        """取得已构建的面板；未构建时返回 None（视为未做任何设置）。"""
+        return self._panels.get(name)
+
+    def ensure_all_panels(self):
+        """强制构建全部面板（无头自检等场景使用）。"""
+        for index in range(len(self._tab_names)):
+            self._ensure_panel(index)
+
+    def _apply_panel_state(self, name: str, panel):
+        """面板构建后同步一次全局状态（例如摄像头模式）。"""
+        if name in ('video', 'registry') and hasattr(panel, 'set_camera_mode'):
+            panel.set_camera_mode(self.source_camera_radio.isChecked())
+
+    def _panel_args(self, name: str):
+        """未构建的面板没有任何设置，返回空列表。"""
+        panel = self._panels.get(name)
+        return panel.get_args() if panel is not None else []
 
     def _create_session_panel(self):
         group = QGroupBox("活动会话")
@@ -198,8 +246,12 @@ class ScrcpyMainMenu(QMainWindow):
     def _create_log_panel(self):
         group = QGroupBox("日志输出")
         layout = QVBoxLayout(group)
-        self.log_output = QTextEdit()
+        # 用 QPlainTextEdit 而不是 QTextEdit：日志场景性能更好，
+        # 且支持 setMaximumBlockCount —— 相当于环形缓冲，
+        # 避免长时间运行时日志无限增长吃内存。
+        self.log_output = QPlainTextEdit()
         self.log_output.setReadOnly(True)
+        self.log_output.setMaximumBlockCount(LOG_MAX_LINES)
         layout.addWidget(self.log_output)
         return group
 
@@ -225,21 +277,25 @@ class ScrcpyMainMenu(QMainWindow):
 
     def on_source_changed(self, is_display_checked):
         is_camera_checked = not is_display_checked
-        # 视频页签在摄像头模式下**保持可用**：码率/编码器/方向/裁剪对摄像头同样有意义。
+        # 视频页签在摄像头模式下保持可用：码率/编码器/方向/裁剪对摄像头同样有意义，
         # 只禁用真正与 --video-source=camera 冲突的项（显示器 ID）。
-        self.video_panel.set_camera_mode(is_camera_checked)
-        self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.virtual_display_panel), is_display_checked)
-        self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.camera_panel), is_camera_checked)
-        if is_camera_checked:
-            self.audio_panel.audio_source_combo.setCurrentText("mic (麦克风)")
-        else:
-            self.audio_panel.audio_source_combo.setCurrentText("output (内部声音, 默认)")
+        for name in ('video', 'registry'):
+            panel = self._panels.get(name)
+            if panel is not None and hasattr(panel, 'set_camera_mode'):
+                panel.set_camera_mode(is_camera_checked)
+        self.tab_widget.setTabEnabled(self._tab_names.index('virtual_display'), is_display_checked)
+        self.tab_widget.setTabEnabled(self._tab_names.index('camera'), is_camera_checked)
+        audio = self._panels.get('audio')
+        if audio is not None:
+            audio.audio_source_combo.setCurrentText(
+                "mic (麦克风)" if is_camera_checked else "output (内部声音, 默认)")
 
     def build_session_args(self, is_otg=False):
         """把界面上所有面板的设置拼装成 scrcpy 命令行参数。
 
         返回 (session_name_hint, cmd_args)；参数不合法时返回 (None, None)。
         预览与启动共用这一份逻辑，避免「预览的和实际执行的不一致」。
+        未构建的面板（用户没打开过）视为未做任何设置。
         """
         device_args = self.device_panel.get_args()
         if device_args is None:
@@ -256,33 +312,26 @@ class ScrcpyMainMenu(QMainWindow):
 
         if is_otg:
             # OTG 模式只认设备选择 + 键鼠手柄，其余设置一律忽略
-            if '--keyboard=disabled' in self.keyboard_panel.get_args():
+            if '--keyboard=disabled' in self._panel_args('keyboard'):
                 cmd_args.append('--keyboard=disabled')
-            if '--mouse=disabled' in self.mouse_panel.get_args():
+            if '--mouse=disabled' in self._panel_args('mouse'):
                 cmd_args.append('--mouse=disabled')
-            if '--gamepad=aoa' in self.gamepad_panel.get_args():
+            if '--gamepad=aoa' in self._panel_args('gamepad'):
                 cmd_args.append('--gamepad=aoa')
             return f"{session_name_hint}-OTG", dedupe_args(cmd_args)
 
         if self.source_camera_radio.isChecked():
             cmd_args.append('--video-source=camera')
-            cmd_args.extend(self.camera_panel.get_args())
-            if max_size := self.video_panel.max_size_input.text().strip():
-                cmd_args.extend(['--max-size', max_size])
-        else:
-            cmd_args.extend(self.video_panel.get_args())
-            cmd_args.extend(self.virtual_display_panel.get_args())
-        cmd_args.extend(self.audio_panel.get_args())
-        cmd_args.extend(self.recording_panel.get_args())
-        cmd_args.extend(self.control_panel.get_args())
-        cmd_args.extend(self.window_panel.get_args())
-        cmd_args.extend(self.shortcuts_panel.get_args())
-        cmd_args.extend(self.v4l2_panel.get_args())
-        cmd_args.extend(self.developer_panel.get_args())
-        cmd_args.extend(self.gamepad_panel.get_args())
-        cmd_args.extend(self.keyboard_panel.get_args())
-        cmd_args.extend(self.mouse_panel.get_args())
-        cmd_args.extend(self.registry_panel.get_args())
+            cmd_args.extend(self._panel_args('camera'))
+            video_panel = self._panels.get('video')
+            if video_panel is not None:
+                max_size = video_panel.max_size_input.text().strip()
+                if max_size:
+                    cmd_args.extend(['--max-size', max_size])
+        for name in PANEL_ARG_ORDER:
+            if name == 'camera':
+                continue
+            cmd_args.extend(self._panel_args(name))
         return session_name_hint, dedupe_args(cmd_args)
 
     @staticmethod
@@ -371,7 +420,7 @@ class ScrcpyMainMenu(QMainWindow):
             self.log(f"UI移除会话显示: {session_id}")
 
     def log(self, message: str):
-        self.log_output.append(message.strip())
+        self.log_output.appendPlainText(message.strip())
         self.log_output.verticalScrollBar().setValue(self.log_output.verticalScrollBar().maximum())
 
     def closeEvent(self, event):
