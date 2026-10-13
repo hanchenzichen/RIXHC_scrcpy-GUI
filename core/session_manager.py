@@ -1,4 +1,6 @@
-from PyQt6.QtCore import QThread, QObject, pyqtSignal
+import time
+
+from PySide6.QtCore import QThread, QObject, Signal
 # 使用绝对导入，确保 IDE 能正确解析
 from core.command_runner import ScrcpyWorker
 
@@ -7,9 +9,9 @@ class SessionManager(QObject):
     """
     负责启动、管理和停止多个 Scrcpy 会话。
     """
-    session_started = pyqtSignal(str, str)
-    session_stopped = pyqtSignal(str)
-    log_signal = pyqtSignal(str)
+    session_started = Signal(str, str)
+    session_stopped = Signal(str)
+    log_signal = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -53,7 +55,26 @@ class SessionManager(QObject):
             self.session_stopped.emit(session_id)
             self.log_signal.emit(f"会话 '{session_id}' 已彻底停止并清理。")
 
-    def stop_all_sessions(self):
+    def stop_all_sessions(self, timeout_ms: int = 8000):
+        """停止所有会话，并等待线程真正退出。
+
+        退出时不等待线程是早期版本的隐患：QThread 还在跑而解释器已经开始销毁
+        对象，会打印 "QThread: Destroyed while thread is still running"，
+        严重时直接崩溃、或留下没有回收的 scrcpy 进程。
+        """
         session_ids = list(self.active_sessions.keys())
+        if not session_ids:
+            return
         for sid in session_ids:
             self.stop_session(sid)
+
+        deadline = time.monotonic() + timeout_ms / 1000.0
+        for sid in session_ids:
+            info = self.active_sessions.get(sid)
+            if not info:
+                continue
+            thread = info['thread']
+            remaining = int(max(0.0, deadline - time.monotonic()) * 1000)
+            thread.quit()
+            if not thread.wait(remaining):
+                self.log_signal.emit(f"警告：会话 '{sid}' 未能在超时内结束，请检查是否有残留的 scrcpy 进程。")

@@ -8,7 +8,12 @@ venv/
 # Build and distribution artifacts
 build/
 dist/
-*.spec
+# 注意：PyInstaller 的 .spec 必须纳入版本管理，否则构建不可复现
+
+# Packaging metadata
+*.egg-info/
+.eggs/
+
 
 # Cache files
 __pycache__/
@@ -16,3 +21,7 @@ __pycache__/
 
 # Local cache files (for our app list)
 scrcpy-gui-cache/
+# 内置的官方 scrcpy 核心（由 tools/fetch_vendor.py 或 CI 下载，不入库）
+vendor/scrcpy/
+vendor/*.zip
+vendor/*.tar.gz

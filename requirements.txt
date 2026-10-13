@@ -1,0 +1,8 @@
+# 运行 GUI / CLI 所需的依赖
+#
+# 说明：这里用 PySide6（LGPL v3）而不是 PyQt6（GPL v3），
+# 这样本项目可以合法地以 MIT 分发打包好的 exe。
+PySide6>=6.6,<6.10
+
+# 打包与发布（CI 里会自动安装，本地打包时手动装）
+#   pip install pyinstaller

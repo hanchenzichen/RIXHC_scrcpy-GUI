@@ -1,0 +1,37 @@
+{
+  "_comment": "手工维护的语义叠加层。参数名/取值来自 options.generated.json（自动生成），本文件只补充那些无法从 cli.c 机械提取的信息。",
+  "conflicts": [
+    ["camera-id", "camera-facing"],
+    ["camera-size", "camera-ar"]
+  ],
+  "requires": {
+    "record-format": ["record"],
+    "v4l2-sink": [],
+    "tunnel-port": ["tunnel-host"],
+    "display-ime-policy": []
+  },
+  "implies": {
+    "no-window": ["no-video-playback"],
+    "audio-dup": ["audio-source=playback"],
+    "no-playback": ["no-video-playback", "no-audio-playback"],
+    "otg": ["no-video-playback"]
+  },
+  "aliases": {
+    "orientation": "display-orientation"
+  },
+  "deprecated": {
+    "orientation": "上游帮助文本已写明「Same as --display-orientation=value」，只是旧别名。"
+  },
+  "never_existed": {
+    "server-debugger": "该参数从未存在于任何 scrcpy 版本（只是 meson 构建期选项 -Dserver_debugger=true）。本项目早期版本误把它做成了 UI 开关，勾选会让 scrcpy 直接以 unrecognized option 退出。"
+  },
+  "platform": {
+    "v4l2-sink": "linux",
+    "v4l2-buffer": "linux"
+  },
+  "risk_notes": {
+    "kill-adb-on-close": "会关闭 adb server，可能影响其他正在使用 adb 的程序。",
+    "no-cleanup": "退出时不在设备上清理 server，可能残留文件。",
+    "record": "文件名由用户提供，注意路径与覆盖风险。"
+  }
+}
