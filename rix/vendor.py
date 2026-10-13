@@ -26,6 +26,7 @@ import platform as platform_module
 import shutil
 import sys
 import tarfile
+import sys as _sys
 import urllib.request
 import zipfile
 
@@ -244,6 +245,11 @@ def status() -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     """供 CI / 高级用户使用：python -m rix.vendor install --target vendor/scrcpy"""
+    try:
+        from rix.console import enable_utf8_output
+        enable_utf8_output()
+    except ImportError:
+        pass
     import argparse
 
     parser = argparse.ArgumentParser(prog="python -m rix.vendor", description="内置 scrcpy 核心管理")

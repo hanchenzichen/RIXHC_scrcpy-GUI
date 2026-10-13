@@ -9,6 +9,16 @@
 
 from __future__ import annotations
 
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from rix.console import enable_utf8_output
+except ImportError:  # 独立运行时退化为不做处理
+    def enable_utf8_output():
+        pass
+
 import argparse
 import os
 import re
@@ -27,6 +37,7 @@ def code_version() -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     parser = argparse.ArgumentParser(description="校验版本号")
     parser.add_argument("--tag", help="git tag（如 v1.1.0）")
     args = parser.parse_args(argv)

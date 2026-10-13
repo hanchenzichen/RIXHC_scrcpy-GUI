@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 import sys
 
+from rix.console import enable_utf8_output
 from rix.scrcpy_bin import find_binary, run_capture
 
 # 形如：  - VLC                       org.videolan.vlc
@@ -79,6 +80,7 @@ def list_apps(binary: str | None = None, serial: str | None = None, timeout: int
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     import argparse
     import json
 

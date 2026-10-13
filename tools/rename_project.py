@@ -16,6 +16,16 @@
 
 from __future__ import annotations
 
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from rix.console import enable_utf8_output
+except ImportError:  # 独立运行时退化为不做处理
+    def enable_utf8_output():
+        pass
+
 import argparse
 import os
 import re
@@ -130,6 +140,7 @@ def rename_github_repo(owner: str, old: str, new: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     parser = argparse.ArgumentParser(description="重命名项目")
     parser.add_argument("--repo", default=DEFAULTS["repo"], help="GitHub 仓库名")
     parser.add_argument("--dist", default=DEFAULTS["dist"], help="PyPI 分发包名 / CLI 命令名")

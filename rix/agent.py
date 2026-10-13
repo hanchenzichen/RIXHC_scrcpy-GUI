@@ -26,6 +26,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from rix import __version__, vendor
+from rix.console import enable_utf8_output
 from rix.profiles import ProfileStore
 from rix.registry import load_registry
 from rix.scrcpy_bin import adb_devices, find_binary, scrcpy_version
@@ -478,6 +479,7 @@ def serve(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, token: str | None 
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     import argparse
 
     parser = argparse.ArgumentParser(prog="python -m rix.agent", description="本地 agent 与 Web 控制台")

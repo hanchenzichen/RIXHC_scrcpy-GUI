@@ -11,6 +11,11 @@ permissions:
   contents: read
   issues: write
 
+env:
+  # 强制 Python 使用 UTF-8：Windows 运行器默认代码页为 cp1252，
+  # 输出中文时会抛 UnicodeEncodeError
+  PYTHONUTF8: '1'
+
 jobs:
   drift:
     name: 检查上游参数变化

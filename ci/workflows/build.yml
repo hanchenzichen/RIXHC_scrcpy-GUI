@@ -14,6 +14,11 @@ permissions:
   contents: write
 
 env:
+  # 强制 Python 使用 UTF-8：Windows 运行器默认代码页为 cp1252，
+  # 输出中文时会抛 UnicodeEncodeError
+  PYTHONUTF8: '1'
+
+env:
   # 内置 scrcpy 核心的版本。升级时改这里即可（值必须与上游 tag 一致）。
   SCRCPY_VERSION: '5.0.1'
 

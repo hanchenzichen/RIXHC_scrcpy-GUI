@@ -14,6 +14,16 @@
 
 from __future__ import annotations
 
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from rix.console import enable_utf8_output
+except ImportError:  # 独立运行时退化为不做处理
+    def enable_utf8_output():
+        pass
+
 import argparse
 import filecmp
 import os
@@ -32,6 +42,7 @@ def workflow_files() -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     parser = argparse.ArgumentParser(description="安装 GitHub Actions 工作流")
     parser.add_argument("--check", action="store_true", help="只检查，不写入")
     args = parser.parse_args(argv)

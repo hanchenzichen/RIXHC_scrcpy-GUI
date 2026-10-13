@@ -22,6 +22,7 @@ import argparse
 import sys
 
 from rix import __version__
+from rix.console import enable_utf8_output
 from rix.profiles import ProfileStore
 from rix.registry import UnknownOptionError, load_registry, parse_assignments
 from rix.scrcpy_bin import find_binary
@@ -98,6 +99,7 @@ class Session:
 
 
 def run(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     parser = argparse.ArgumentParser(prog="rix-scrcpy tui", description="极简 TUI")
     parser.add_argument("--script", help="非交互模式：用 ';' 分隔的命令序列")
     parser.add_argument("--profile", help="启动时载入预设")

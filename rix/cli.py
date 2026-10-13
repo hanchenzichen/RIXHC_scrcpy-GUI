@@ -24,6 +24,7 @@ from rix import __version__
 from rix.profiles import InvalidProfileName, ProfileStore
 from rix.registry import UnknownOptionError, load_registry, parse_assignments
 from rix import vendor
+from rix.console import enable_utf8_output
 from rix.scrcpy_bin import find_binary, run_capture, scrcpy_version, supports
 
 
@@ -344,6 +345,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    enable_utf8_output()
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
